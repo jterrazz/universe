@@ -126,9 +126,8 @@ fn frag(uv: vec2f) -> vec4f {
   let res = motiongpuFrame.resolution;
   let time = motiongpuFrame.time;
   let fc = uv * res;
-  // Canvas is 3x logical size; sphere fills ~33% leaving massive
-  // margin for glow to fade completely before any container clips
-  let rs = 4.8 / max(motiongpuUniforms.uViewportScale, 0.0001);
+  // Sphere fills ~75% of the canvas — tight fit, glow is subtle
+  let rs = 2.5 / max(motiongpuUniforms.uViewportScale, 0.0001);
   let src = vec3f(rs * (fc - 0.5 * res) / res.y, 2.0);
   let dir = vec3f(0.0, 0.0, -1.0);
   let a = time * 0.15;
@@ -146,7 +145,7 @@ fn frag(uv: vec2f) -> vec4f {
     if (loc.z < -1.0) { break; }
     val = field(rot * loc);
     if (val <= CLOSENESS) { break; }
-    if (val > 0.00001) { atmos += 0.03; }
+    if (val > 0.00001 && val < 0.15) { atmos += 0.015; }
     t += val * 0.5;
   }
 
@@ -169,8 +168,8 @@ fn frag(uv: vec2f) -> vec4f {
     let rm = clamp(1.0 - (1.0 - length(loc)) * 18.0, 0.0, 1.0);
     let body = mix(vec3f(0.02, 0.02, 0.024), vec3f(0.06, 0.055, 0.06), rm * 0.65);
     let sp = pow(max(dot(reflect(-ld, n), vd), 0.0), 64.0) * 0.15;
-    let fr = pow(1.0 - max(dot(n, vd), 0.0), 3.0);
-    let rim = vec3f(1.0) * fr * 1.5;
+    let fr = pow(1.0 - max(dot(n, vd), 0.0), 4.0);
+    let rim = vec3f(1.0) * fr * 1.2;
     let wave = clickWave(on, n, motiongpuUniforms.uClick0, time)
              + clickWave(on, n, motiongpuUniforms.uClick1, time)
              + clickWave(on, n, motiongpuUniforms.uClick2, time);
@@ -180,11 +179,11 @@ fn frag(uv: vec2f) -> vec4f {
   }
   let p = 2.0 * (fc / res.y - vec2f(0.5 / res.y * res.x, 0.5));
   let q = max(0.1, min(1.0, dot(vec3f(p, sqrt(max(1.0 - dot(p, p), 0.0))), vec3f(0.0, 2.0, 1.0))));
-  let al = shad * max(0.0, dot(normalize(src), normalize(vec3f(0.0, 2.0, 1.0)))) * pow(max(atmos, 0.0), 1.5);
-  let atmosColor = al * vec3f(0.45, 0.5, 0.6) + pow(we * 0.5, 1.0) * motiongpuUniforms.uWaveColor * 2.0;
-  let atmosAlpha = clamp(length(atmosColor) * 2.0, 0.0, 1.0);
+  // Tighter atmosphere — fades quickly so it stays within canvas bounds
+  let al = shad * max(0.0, dot(normalize(src), normalize(vec3f(0.0, 2.0, 1.0)))) * pow(max(atmos, 0.0), 2.5) * 0.6;
+  let atmosColor = al * vec3f(0.4, 0.45, 0.55) + pow(we * 0.4, 1.0) * motiongpuUniforms.uWaveColor * 1.5;
+  let atmosAlpha = clamp(length(atmosColor) * 1.5, 0.0, 1.0);
   fc4 += q * vec4f(atmosColor, atmosAlpha);
-  // Premultiplied alpha: clamp final alpha based on total luminance
   fc4.w = clamp(fc4.w, 0.0, 1.0);
   return fc4;
 }
@@ -239,9 +238,8 @@ function ShaderRuntime({ waveColor }: { waveColor: [number, number, number] }) {
   return null;
 }
 
-// The exported planet component — same interface + scaling as the cobe version.
-// The shader canvas is rendered as a position:fixed overlay that tracks the
-// planet's screen position, escaping all parent overflow:hidden containers.
+// Simple inline canvas — the shader's atmosphere is tuned to fade
+// to zero within the canvas bounds so overflow:hidden doesn't matter.
 export function Planet({
   world,
   index,
@@ -257,124 +255,80 @@ export function Planet({
   const waveColor = hueToRgb(hue);
   const size = compact ? 140 : 200;
   const name = getWorldName(world);
-  const anchorRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState({ x: 0, y: 0 });
 
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     setIsMobile(window.innerWidth < 768);
   }, []);
 
-  // Track the anchor's screen position so the fixed canvas follows it
-  useEffect(() => {
-    const el = anchorRef.current;
-    if (!el || isPlaceholder) return;
-    let raf = 0;
-    const sync = () => {
-      const r = el.getBoundingClientRect();
-      setPos((prev) => {
-        const nx = r.left + r.width / 2;
-        const ny = r.top + r.height / 2;
-        if (Math.abs(prev.x - nx) < 0.5 && Math.abs(prev.y - ny) < 0.5) return prev;
-        return { x: nx, y: ny };
-      });
-      raf = requestAnimationFrame(sync);
-    };
-    raf = requestAnimationFrame(sync);
-    return () => cancelAnimationFrame(raf);
-  }, [isPlaceholder]);
-
   const scale = isSelected
     ? isMobile ? 1.3 : compact ? 1.5 : 1.8
     : isMobile ? 0.7 : compact ? 1.15 : 0.85;
 
   const filter = isSelected ? "brightness(1.15)" : "brightness(1)";
-  const canvasSize = size * 3; // large enough for full glow bleed
 
   return (
-    <>
-      {/* Fixed-position shader canvas — escapes all overflow:hidden */}
-      {!isPlaceholder && (
-        <div
-          className="pointer-events-none"
-          style={{
-            position: "fixed",
-            left: pos.x - canvasSize / 2,
-            top: pos.y - canvasSize / 2,
-            width: canvasSize,
-            height: canvasSize,
-            zIndex: 0,
-            transform: `scale(${scale})`,
-            filter,
-            transition:
-              "transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), filter 0.9s cubic-bezier(0.16, 1, 0.3, 1)",
-          }}
+    <div
+      onClick={onClick}
+      onDoubleClick={onEnter}
+      role="button"
+      tabIndex={0}
+      className="relative flex flex-col items-center gap-3 focus:outline-none cursor-pointer will-change-transform select-none"
+      style={{ width: size, height: size + 40 }}
+    >
+      {!hideLabels && (
+        <span
+          className="text-[11px] font-medium tracking-wide text-foreground/60 truncate max-w-[160px]"
+          style={{ opacity: isSelected ? 1 : 0.5 }}
         >
+          {isPlaceholder ? "" : name}
+        </span>
+      )}
+      <div
+        className="will-change-[transform,filter]"
+        style={{
+          width: size,
+          height: size,
+          transform: `scale(${scale})`,
+          filter: isPlaceholder ? "grayscale(1) brightness(0.3)" : filter,
+          transition:
+            "transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), filter 0.9s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
+      >
+        {isPlaceholder ? (
+          <div className="w-full h-full bg-white/[0.03] flex items-center justify-center rounded-full">
+            <svg
+              className="pointer-events-none text-white/90"
+              width="28"
+              height="28"
+              viewBox="0 0 20 20"
+              fill="none"
+            >
+              <path
+                d="M10 4.5V15.5M4.5 10H15.5"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+        ) : (
           <FragCanvas material={material} outputColorSpace="linear" dpr={2.0}>
             <ShaderRuntime waveColor={waveColor} />
           </FragCanvas>
-        </div>
-      )}
-
-      {/* Layout anchor — this sits in the normal flow inside the carousel */}
-      <div
-        onClick={onClick}
-        onDoubleClick={onEnter}
-        role="button"
-        tabIndex={0}
-        className="relative flex flex-col items-center gap-3 focus:outline-none cursor-pointer will-change-transform select-none"
-        style={{ width: size, height: size + 40, zIndex: 1 }}
-      >
-        {!hideLabels && (
-          <span
-            className="text-[11px] font-medium tracking-wide text-foreground/60 truncate max-w-[160px]"
-            style={{ opacity: isSelected ? 1 : 0.5 }}
-          >
-            {isPlaceholder ? "" : name}
-          </span>
         )}
-        {/* Invisible anchor for position tracking */}
-        <div
-          ref={anchorRef}
-          style={{
-            width: size,
-            height: size,
-            transform: `scale(${scale})`,
-            transition: "transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)",
-          }}
-        >
-          {isPlaceholder && (
-            <div className="w-full h-full bg-white/[0.03] flex items-center justify-center rounded-full">
-              <svg
-                className="pointer-events-none text-white/90"
-                width="28"
-                height="28"
-                viewBox="0 0 20 20"
-                fill="none"
-              >
-                <path
-                  d="M10 4.5V15.5M4.5 10H15.5"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-          )}
-        </div>
-        {/* Status dot */}
-        <div
-          className="w-2 h-2 rounded-full"
-          style={{
-            backgroundColor:
-              world.status === "running"
-                ? `hsl(${hue}, ${sat}%, 55%)`
-                : world.status === "error"
-                  ? "#ef4444"
-                  : `hsl(${hue}, 15%, 35%)`,
-          }}
-        />
       </div>
-    </>
+      <div
+        className="w-2 h-2 rounded-full"
+        style={{
+          backgroundColor:
+            world.status === "running"
+              ? `hsl(${hue}, ${sat}%, 55%)`
+              : world.status === "error"
+                ? "#ef4444"
+                : `hsl(${hue}, 15%, 35%)`,
+        }}
+      />
+    </div>
   );
 }
