@@ -156,9 +156,9 @@ fn frag(uv: vec2f) -> vec4f {
   var shad = clamp((s1 + s2) * 0.5, 0.0, 1.0);
   shad = mix(shad, 1.0, 0.3);
   let amb = clamp(field(rot * (loc - 0.5 * dir)) / 0.5 * 1.2, 0.0, 1.0);
-  // Black background — mix-blend-mode:screen on the canvas makes
-  // black pixels invisible against the dark app background
-  var fc4 = vec4f(0.0, 0.0, 0.0, 1.0);
+  // Transparent background — alpha=0 so the canvas is see-through
+  // where the sphere isn't rendered (WebGPU alphaMode=premultiplied)
+  var fc4 = vec4f(0.0, 0.0, 0.0, 0.0);
   var we = 0.0;
   if (val <= CLOSENESS) {
     let n = getNormal(loc, val, rot);
@@ -181,7 +181,11 @@ fn frag(uv: vec2f) -> vec4f {
   let p = 2.0 * (fc / res.y - vec2f(0.5 / res.y * res.x, 0.5));
   let q = max(0.1, min(1.0, dot(vec3f(p, sqrt(max(1.0 - dot(p, p), 0.0))), vec3f(0.0, 2.0, 1.0))));
   let al = shad * max(0.0, dot(normalize(src), normalize(vec3f(0.0, 2.0, 1.0)))) * pow(max(atmos, 0.0), 1.5);
-  fc4 += q * vec4f(al * vec3f(0.45, 0.5, 0.6) + pow(we * 0.5, 1.0) * motiongpuUniforms.uWaveColor * 2.0, 1.0);
+  let atmosColor = al * vec3f(0.45, 0.5, 0.6) + pow(we * 0.5, 1.0) * motiongpuUniforms.uWaveColor * 2.0;
+  let atmosAlpha = clamp(length(atmosColor) * 2.0, 0.0, 1.0);
+  fc4 += q * vec4f(atmosColor, atmosAlpha);
+  // Premultiplied alpha: clamp final alpha based on total luminance
+  fc4.w = clamp(fc4.w, 0.0, 1.0);
   return fc4;
 }
 `,
@@ -321,10 +325,6 @@ export function Planet({
               width: size * 1.4,
               height: size * 1.4,
               margin: size * -0.2,
-              // screen blend mode makes black pixels invisible against
-              // the dark app background — the shader's near-black
-              // empty area disappears, only the lit sphere shows
-              mixBlendMode: "screen",
             }}
           >
             <FragCanvas
