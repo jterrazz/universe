@@ -261,9 +261,8 @@ export function Planet({
     ? isMobile ? 1.3 : compact ? 1.5 : 1.8
     : isMobile ? 0.7 : compact ? 1.15 : 0.85;
 
-  const filter = isSelected
-    ? `brightness(1.2) drop-shadow(0 0 28px hsl(${hue}, ${sat}%, 62%))`
-    : `brightness(1) drop-shadow(0 0 12px hsla(${hue}, ${sat}%, 60%, 0.45))`;
+  // No CSS drop-shadow — the shader has its own rim glow + atmosphere
+  const filter = isSelected ? "brightness(1.15)" : "brightness(1)";
 
   return (
     <div
