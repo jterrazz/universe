@@ -126,7 +126,8 @@ fn frag(uv: vec2f) -> vec4f {
   let res = motiongpuFrame.resolution;
   let time = motiongpuFrame.time;
   let fc = uv * res;
-  let rs = 3.0 / max(motiongpuUniforms.uViewportScale, 0.0001);
+  // Scale sphere to fill ~85% of the canvas (was 3.0 for fullscreen)
+  let rs = 2.3 / max(motiongpuUniforms.uViewportScale, 0.0001);
   let src = vec3f(rs * (fc - 0.5 * res) / res.y, 2.0);
   let dir = vec3f(0.0, 0.0, -1.0);
   let a = time * 0.15;
@@ -154,7 +155,8 @@ fn frag(uv: vec2f) -> vec4f {
   var shad = clamp((s1 + s2) * 0.5, 0.0, 1.0);
   shad = mix(shad, 1.0, 0.3);
   let amb = clamp(field(rot * (loc - 0.5 * dir)) / 0.5 * 1.2, 0.0, 1.0);
-  var fc4 = vec4f(0.01, 0.012, 0.016, 1.0);
+  // Transparent background — only the sphere is visible
+  var fc4 = vec4f(0.0, 0.0, 0.0, 0.0);
   var we = 0.0;
   if (val <= CLOSENESS) {
     let n = getNormal(loc, val, rot);
@@ -199,10 +201,7 @@ function ShaderRuntime({ waveColor }: { waveColor: [number, number, number] }) {
     onClick: (click) => {
       const { width, height } = motiongpu.size.current;
       if (width <= 0 || height <= 0) return;
-      const canvas = motiongpu.canvas;
-      const short = Math.max(320, Math.min(canvas?.clientWidth ?? width, canvas?.clientHeight ?? height));
-      const scale = clamp(short / 900, 0.7, 1.18);
-      const rs = 3 / Math.max(scale, 0.0001);
+      const rs = 2.3; // match shader rayScale
       const aspect = width / height;
       const sx = rs * (click.uv[0] - 0.5) * aspect;
       const sy = rs * (click.uv[1] - 0.5);
@@ -222,9 +221,9 @@ function ShaderRuntime({ waveColor }: { waveColor: [number, number, number] }) {
 
   useFrame((state) => {
     ft.current = state.time;
-    const canvas = motiongpu.canvas;
-    const short = Math.max(320, Math.min(canvas?.clientWidth ?? 400, canvas?.clientHeight ?? 400));
-    state.setUniform("uViewportScale", clamp(short / 900, 0.7, 1.18));
+    // For small planet canvases (140-200px), always use scale 1.0
+    // (the original demo scaled for fullscreen viewports)
+    state.setUniform("uViewportScale", 1.0);
     state.setUniform("uWaveColor", waveColor);
     for (let i = 0; i < MAX_WAVES; i++) {
       state.setUniform(`uClick${i}`, waves.current[i]);
