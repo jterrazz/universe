@@ -320,9 +320,17 @@ export function Planet({
               width: size * 1.4,
               height: size * 1.4,
               margin: size * -0.2,
+              background: "transparent",
             }}
           >
-            <FragCanvas material={material} outputColorSpace="linear" dpr={1.0}>
+            <FragCanvas
+              material={material}
+              outputColorSpace="linear"
+              dpr={2.0}
+              alphaMode="premultiplied"
+              className="!bg-transparent"
+              style={{ background: "transparent" }}
+            >
               <ShaderRuntime waveColor={waveColor} />
             </FragCanvas>
           </div>
