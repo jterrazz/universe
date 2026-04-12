@@ -126,9 +126,9 @@ fn frag(uv: vec2f) -> vec4f {
   let res = motiongpuFrame.resolution;
   let time = motiongpuFrame.time;
   let fc = uv * res;
-  // Sphere fills ~55% of canvas — large enough to be prominent,
-  // glow still fades before hitting the canvas edge
-  let rs = 3.2 / max(motiongpuUniforms.uViewportScale, 0.0001);
+  // Canvas is 3x logical size; sphere fills ~33% leaving massive
+  // margin for glow to fade completely before any container clips
+  let rs = 4.8 / max(motiongpuUniforms.uViewportScale, 0.0001);
   let src = vec3f(rs * (fc - 0.5 * res) / res.y, 2.0);
   let dir = vec3f(0.0, 0.0, -1.0);
   let a = time * 0.15;
@@ -322,9 +322,9 @@ export function Planet({
         ) : (
           <div
             style={{
-              width: size * 2,
-              height: size * 2,
-              margin: size * -0.5,
+              width: size * 3,
+              height: size * 3,
+              margin: size * -1,
             }}
           >
             <FragCanvas
