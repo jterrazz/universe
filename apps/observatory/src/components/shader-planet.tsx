@@ -177,14 +177,15 @@ fn frag(uv: vec2f) -> vec4f {
     let tl = mix(amb * 0.6, shad * li, 0.78) + we * 0.14;
     fc4 = vec4f(body * (0.07 + tl * 0.93) + rim + vec3f(sp) + wave, 1.0);
   }
-  let p = 2.0 * (fc / res.y - vec2f(0.5 / res.y * res.x, 0.5));
-  let q = max(0.1, min(1.0, dot(vec3f(p, sqrt(max(1.0 - dot(p, p), 0.0))), vec3f(0.0, 2.0, 1.0))));
-  // Tighter atmosphere — fades quickly so it stays within canvas bounds
-  let al = shad * max(0.0, dot(normalize(src), normalize(vec3f(0.0, 2.0, 1.0)))) * pow(max(atmos, 0.0), 2.5) * 0.6;
-  let atmosColor = al * vec3f(0.4, 0.45, 0.55) + pow(we * 0.4, 1.0) * motiongpuUniforms.uWaveColor * 1.5;
-  let atmosAlpha = clamp(length(atmosColor) * 1.5, 0.0, 1.0);
-  fc4 += q * vec4f(atmosColor, atmosAlpha);
-  fc4.w = clamp(fc4.w, 0.0, 1.0);
+  // Atmosphere: only contribute if we hit the sphere (fc4.w > 0)
+  // This prevents the halo from extending into empty canvas space
+  if (fc4.w > 0.0) {
+    let p = 2.0 * (fc / res.y - vec2f(0.5 / res.y * res.x, 0.5));
+    let q = max(0.1, min(1.0, dot(vec3f(p, sqrt(max(1.0 - dot(p, p), 0.0))), vec3f(0.0, 2.0, 1.0))));
+    let al = shad * max(0.0, dot(normalize(src), normalize(vec3f(0.0, 2.0, 1.0)))) * pow(max(atmos, 0.0), 3.0) * 0.4;
+    let atmosColor = al * vec3f(0.35, 0.4, 0.5) + pow(we * 0.3, 1.0) * motiongpuUniforms.uWaveColor;
+    fc4 = vec4f(fc4.xyz + q * atmosColor, 1.0);
+  }
   return fc4;
 }
 `,
