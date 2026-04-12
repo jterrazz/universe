@@ -234,7 +234,7 @@ function ShaderRuntime({ waveColor }: { waveColor: [number, number, number] }) {
   return null;
 }
 
-// The exported planet component with same interface as the cobe-based one
+// The exported planet component — same interface + scaling as the cobe version
 export function Planet({
   world,
   index,
@@ -251,11 +251,29 @@ export function Planet({
   const size = compact ? 140 : 200;
   const name = getWorldName(world);
 
+  // Responsive check
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+  }, []);
+
+  // Scale + filter match the old cobe planet exactly
+  const scale = isSelected
+    ? isMobile ? 1.3 : compact ? 1.5 : 1.8
+    : isMobile ? 0.7 : compact ? 1.15 : 0.85;
+
+  const filter = isSelected
+    ? `brightness(1.2) drop-shadow(0 0 28px hsl(${hue}, ${sat}%, 62%))`
+    : `brightness(1) drop-shadow(0 0 12px hsla(${hue}, ${sat}%, 60%, 0.45))`;
+
   return (
     <div
-      className="flex flex-col items-center gap-3 cursor-pointer select-none"
       onClick={onClick}
       onDoubleClick={onEnter}
+      role="button"
+      tabIndex={0}
+      className="relative flex flex-col items-center gap-3 focus:outline-none cursor-pointer will-change-transform select-none"
+      style={{ width: size, height: size + 40 }}
     >
       {!hideLabels && (
         <span
@@ -265,20 +283,34 @@ export function Planet({
           {isPlaceholder ? "" : name}
         </span>
       )}
+      {/* Globe wrapper — scaled + filtered like the cobe version */}
       <div
-        className="relative rounded-full overflow-hidden"
+        className="will-change-[transform,filter] rounded-full overflow-hidden"
         style={{
           width: size,
           height: size,
-          filter: isPlaceholder ? "grayscale(1) brightness(0.3)" : undefined,
-          boxShadow: isSelected
-            ? `0 0 40px 8px hsla(${hue}, ${sat}%, 50%, 0.15)`
-            : undefined,
+          transform: `scale(${scale})`,
+          filter: isPlaceholder ? "grayscale(1) brightness(0.3)" : filter,
+          transition:
+            "transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), filter 0.9s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
         {isPlaceholder ? (
           <div className="w-full h-full bg-white/[0.03] flex items-center justify-center">
-            <span className="text-3xl text-white/20">+</span>
+            <svg
+              className="pointer-events-none text-white/90"
+              width="28"
+              height="28"
+              viewBox="0 0 20 20"
+              fill="none"
+            >
+              <path
+                d="M10 4.5V15.5M4.5 10H15.5"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+              />
+            </svg>
           </div>
         ) : (
           <FragCanvas material={material} outputColorSpace="linear" dpr={1.0}>
