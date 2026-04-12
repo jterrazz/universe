@@ -156,8 +156,9 @@ fn frag(uv: vec2f) -> vec4f {
   var shad = clamp((s1 + s2) * 0.5, 0.0, 1.0);
   shad = mix(shad, 1.0, 0.3);
   let amb = clamp(field(rot * (loc - 0.5 * dir)) / 0.5 * 1.2, 0.0, 1.0);
-  // Transparent background — only the sphere is visible
-  var fc4 = vec4f(0.0, 0.0, 0.0, 0.0);
+  // Black background — mix-blend-mode:screen on the canvas makes
+  // black pixels invisible against the dark app background
+  var fc4 = vec4f(0.0, 0.0, 0.0, 1.0);
   var we = 0.0;
   if (val <= CLOSENESS) {
     let n = getNormal(loc, val, rot);
@@ -320,16 +321,16 @@ export function Planet({
               width: size * 1.4,
               height: size * 1.4,
               margin: size * -0.2,
-              background: "transparent",
+              // screen blend mode makes black pixels invisible against
+              // the dark app background — the shader's near-black
+              // empty area disappears, only the lit sphere shows
+              mixBlendMode: "screen",
             }}
           >
             <FragCanvas
               material={material}
               outputColorSpace="linear"
               dpr={2.0}
-              alphaMode="premultiplied"
-              className="!bg-transparent"
-              style={{ background: "transparent" }}
             >
               <ShaderRuntime waveColor={waveColor} />
             </FragCanvas>
