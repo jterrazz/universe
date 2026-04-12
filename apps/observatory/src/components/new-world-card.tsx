@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { Planet as PlanetGlobe } from "@/components/planet";
+import { Planet as PlanetGlobe } from "@/components/shader-planet";
 import type { World } from "@/lib/types";
 
 // The placeholder "new world" record PlanetGlobe checks for via its id.
