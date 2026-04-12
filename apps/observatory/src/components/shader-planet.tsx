@@ -126,8 +126,9 @@ fn frag(uv: vec2f) -> vec4f {
   let res = motiongpuFrame.resolution;
   let time = motiongpuFrame.time;
   let fc = uv * res;
-  // Scale sphere to fill ~85% of the canvas (was 3.0 for fullscreen)
-  let rs = 2.3 / max(motiongpuUniforms.uViewportScale, 0.0001);
+  // Canvas is 1.4x the logical size; sphere fills ~60% of canvas
+  // leaving room for the atmospheric glow at the edges
+  let rs = 2.8 / max(motiongpuUniforms.uViewportScale, 0.0001);
   let src = vec3f(rs * (fc - 0.5 * res) / res.y, 2.0);
   let dir = vec3f(0.0, 0.0, -1.0);
   let a = time * 0.15;
@@ -281,7 +282,10 @@ export function Planet({
           {isPlaceholder ? "" : name}
         </span>
       )}
-      {/* Globe wrapper — scaled + filtered like the cobe version */}
+      {/* Globe wrapper — the canvas is 40% larger than the logical
+           size so the atmospheric rim glow has room to breathe without
+           being clipped at the canvas edge. negative margin pulls
+           the oversized canvas back into the layout flow. */}
       <div
         className="will-change-[transform,filter]"
         style={{
@@ -294,7 +298,7 @@ export function Planet({
         }}
       >
         {isPlaceholder ? (
-          <div className="w-full h-full bg-white/[0.03] flex items-center justify-center">
+          <div className="w-full h-full bg-white/[0.03] flex items-center justify-center rounded-full">
             <svg
               className="pointer-events-none text-white/90"
               width="28"
@@ -311,9 +315,17 @@ export function Planet({
             </svg>
           </div>
         ) : (
-          <FragCanvas material={material} outputColorSpace="linear" dpr={1.0}>
-            <ShaderRuntime waveColor={waveColor} />
-          </FragCanvas>
+          <div
+            style={{
+              width: size * 1.4,
+              height: size * 1.4,
+              margin: size * -0.2,
+            }}
+          >
+            <FragCanvas material={material} outputColorSpace="linear" dpr={1.0}>
+              <ShaderRuntime waveColor={waveColor} />
+            </FragCanvas>
+          </div>
         )}
       </div>
       {/* Status dot */}
