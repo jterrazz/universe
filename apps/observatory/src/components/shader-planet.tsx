@@ -239,7 +239,9 @@ function ShaderRuntime({ waveColor }: { waveColor: [number, number, number] }) {
   return null;
 }
 
-// The exported planet component — same interface + scaling as the cobe version
+// The exported planet component — same interface + scaling as the cobe version.
+// The shader canvas is rendered as a position:fixed overlay that tracks the
+// planet's screen position, escaping all parent overflow:hidden containers.
 export function Planet({
   world,
   index,
@@ -255,100 +257,124 @@ export function Planet({
   const waveColor = hueToRgb(hue);
   const size = compact ? 140 : 200;
   const name = getWorldName(world);
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
 
-  // Responsive check
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     setIsMobile(window.innerWidth < 768);
   }, []);
 
-  // Scale + filter match the old cobe planet exactly
+  // Track the anchor's screen position so the fixed canvas follows it
+  useEffect(() => {
+    const el = anchorRef.current;
+    if (!el || isPlaceholder) return;
+    let raf = 0;
+    const sync = () => {
+      const r = el.getBoundingClientRect();
+      setPos((prev) => {
+        const nx = r.left + r.width / 2;
+        const ny = r.top + r.height / 2;
+        if (Math.abs(prev.x - nx) < 0.5 && Math.abs(prev.y - ny) < 0.5) return prev;
+        return { x: nx, y: ny };
+      });
+      raf = requestAnimationFrame(sync);
+    };
+    raf = requestAnimationFrame(sync);
+    return () => cancelAnimationFrame(raf);
+  }, [isPlaceholder]);
+
   const scale = isSelected
     ? isMobile ? 1.3 : compact ? 1.5 : 1.8
     : isMobile ? 0.7 : compact ? 1.15 : 0.85;
 
-  // No CSS drop-shadow — the shader has its own rim glow + atmosphere
   const filter = isSelected ? "brightness(1.15)" : "brightness(1)";
+  const canvasSize = size * 3; // large enough for full glow bleed
 
   return (
-    <div
-      onClick={onClick}
-      onDoubleClick={onEnter}
-      role="button"
-      tabIndex={0}
-      className="relative flex flex-col items-center gap-3 focus:outline-none cursor-pointer will-change-transform select-none"
-      style={{ width: size, height: size + 40 }}
-    >
-      {!hideLabels && (
-        <span
-          className="text-[11px] font-medium tracking-wide text-foreground/60 truncate max-w-[160px]"
-          style={{ opacity: isSelected ? 1 : 0.5 }}
+    <>
+      {/* Fixed-position shader canvas — escapes all overflow:hidden */}
+      {!isPlaceholder && (
+        <div
+          className="pointer-events-none"
+          style={{
+            position: "fixed",
+            left: pos.x - canvasSize / 2,
+            top: pos.y - canvasSize / 2,
+            width: canvasSize,
+            height: canvasSize,
+            zIndex: 0,
+            transform: `scale(${scale})`,
+            filter,
+            transition:
+              "transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), filter 0.9s cubic-bezier(0.16, 1, 0.3, 1)",
+          }}
         >
-          {isPlaceholder ? "" : name}
-        </span>
+          <FragCanvas material={material} outputColorSpace="linear" dpr={2.0}>
+            <ShaderRuntime waveColor={waveColor} />
+          </FragCanvas>
+        </div>
       )}
-      {/* Globe wrapper — the canvas is 40% larger than the logical
-           size so the atmospheric rim glow has room to breathe without
-           being clipped at the canvas edge. negative margin pulls
-           the oversized canvas back into the layout flow. */}
+
+      {/* Layout anchor — this sits in the normal flow inside the carousel */}
       <div
-        className="will-change-[transform,filter]"
-        style={{
-          width: size,
-          height: size,
-          transform: `scale(${scale})`,
-          filter: isPlaceholder ? "grayscale(1) brightness(0.3)" : filter,
-          transition:
-            "transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), filter 0.9s cubic-bezier(0.16, 1, 0.3, 1)",
-        }}
+        onClick={onClick}
+        onDoubleClick={onEnter}
+        role="button"
+        tabIndex={0}
+        className="relative flex flex-col items-center gap-3 focus:outline-none cursor-pointer will-change-transform select-none"
+        style={{ width: size, height: size + 40, zIndex: 1 }}
       >
-        {isPlaceholder ? (
-          <div className="w-full h-full bg-white/[0.03] flex items-center justify-center rounded-full">
-            <svg
-              className="pointer-events-none text-white/90"
-              width="28"
-              height="28"
-              viewBox="0 0 20 20"
-              fill="none"
-            >
-              <path
-                d="M10 4.5V15.5M4.5 10H15.5"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-        ) : (
-          <div
-            style={{
-              width: size * 3,
-              height: size * 3,
-              margin: size * -1,
-            }}
+        {!hideLabels && (
+          <span
+            className="text-[11px] font-medium tracking-wide text-foreground/60 truncate max-w-[160px]"
+            style={{ opacity: isSelected ? 1 : 0.5 }}
           >
-            <FragCanvas
-              material={material}
-              outputColorSpace="linear"
-              dpr={2.0}
-            >
-              <ShaderRuntime waveColor={waveColor} />
-            </FragCanvas>
-          </div>
+            {isPlaceholder ? "" : name}
+          </span>
         )}
+        {/* Invisible anchor for position tracking */}
+        <div
+          ref={anchorRef}
+          style={{
+            width: size,
+            height: size,
+            transform: `scale(${scale})`,
+            transition: "transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)",
+          }}
+        >
+          {isPlaceholder && (
+            <div className="w-full h-full bg-white/[0.03] flex items-center justify-center rounded-full">
+              <svg
+                className="pointer-events-none text-white/90"
+                width="28"
+                height="28"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <path
+                  d="M10 4.5V15.5M4.5 10H15.5"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+          )}
+        </div>
+        {/* Status dot */}
+        <div
+          className="w-2 h-2 rounded-full"
+          style={{
+            backgroundColor:
+              world.status === "running"
+                ? `hsl(${hue}, ${sat}%, 55%)`
+                : world.status === "error"
+                  ? "#ef4444"
+                  : `hsl(${hue}, 15%, 35%)`,
+          }}
+        />
       </div>
-      {/* Status dot */}
-      <div
-        className="w-2 h-2 rounded-full"
-        style={{
-          backgroundColor:
-            world.status === "running"
-              ? `hsl(${hue}, ${sat}%, 55%)`
-              : world.status === "error"
-                ? "#ef4444"
-                : `hsl(${hue}, 15%, 35%)`,
-        }}
-      />
-    </div>
+    </>
   );
 }
