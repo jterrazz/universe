@@ -279,7 +279,7 @@ export default function UniverseMapPage() {
           {/* Worlds */}
           {worlds.length > 0 ? (
             <div
-              className="relative flex-1 min-h-[320px] -mx-6 md:-mx-8 overflow-hidden"
+              className="relative flex-1 min-h-[320px] -mx-6 md:-mx-8 overflow-visible"
               onClick={(e) => { if (e.target === e.currentTarget && selected !== null) setSelected(null); }}
             >
             <div className="h-full flex items-center pb-24">
