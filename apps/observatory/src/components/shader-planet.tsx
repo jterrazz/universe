@@ -126,8 +126,9 @@ fn frag(uv: vec2f) -> vec4f {
   let res = motiongpuFrame.resolution;
   let time = motiongpuFrame.time;
   let fc = uv * res;
-  // Sphere fills ~40% of canvas — the glow fades well before the edge
-  let rs = 4.5 / max(motiongpuUniforms.uViewportScale, 0.0001);
+  // Sphere fills ~55% of canvas — large enough to be prominent,
+  // glow still fades before hitting the canvas edge
+  let rs = 3.2 / max(motiongpuUniforms.uViewportScale, 0.0001);
   let src = vec3f(rs * (fc - 0.5 * res) / res.y, 2.0);
   let dir = vec3f(0.0, 0.0, -1.0);
   let a = time * 0.15;
