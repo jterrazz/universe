@@ -283,7 +283,7 @@ export function Planet({
       )}
       {/* Globe wrapper — scaled + filtered like the cobe version */}
       <div
-        className="will-change-[transform,filter] rounded-full overflow-hidden"
+        className="will-change-[transform,filter]"
         style={{
           width: size,
           height: size,
