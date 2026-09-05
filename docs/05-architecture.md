@@ -73,7 +73,7 @@ compile.Tree           →  world.Spawn        →  running container + synced a
 
 ## Container architecture: Docker-outside-of-Docker (DooD)
 
-spwn uses **DooD**, not DinD. The host's Docker daemon is shared via socket mount (`/var/run/docker.sock`); every container is a **sibling** on the same daemon — no nesting, no privilege escalation, no performance overhead.
+spwn uses **DooD**, not DinD ([ADR-013](decisions/013-dood-over-dind.md)). The host's Docker daemon is shared via socket mount (`/var/run/docker.sock`); every container is a **sibling** on the same daemon — no nesting, no privilege escalation, no performance overhead.
 
 ```
 Host machine
@@ -99,6 +99,24 @@ The [gate](06-gate.md) is a separate long-running host container that owns cooki
 - **Labels are truth.** World state comes from Docker labels, not on-disk state.
 - **Compile is deterministic.** Same input → same output, covered by golden tests.
 - **Layers flow downward.** Enforced by depguard; no upward imports.
+- **External systems sit behind ports.** Every dependency on the outside world is a Go interface defined in the domain that uses it, with the adapter injected at startup — no domain package names a concrete backend ([ADR-011](decisions/011-ports-and-adapters.md)).
+
+## What the architecture does not do
+
+The boundaries are as load-bearing as the layers:
+
+- **It does not implement agent reasoning.** The runtime does the thinking, planning, and tool use; spwn creates the reality it operates in.
+- **It does not run inference.** No model call happens in the machinery — the runtime manages its own.
+- **It does not schedule work.** Worlds are created on demand, by an operator or by a declared trigger ([Automations](automations.md)).
+- **It does not network worlds together.** Each world is isolated; anything between two worlds goes through the host.
+- **It does not persist worlds.** The Soul and the Mind persist; worlds are disposable.
+- **It does not restrict behaviour through rules.** What an agent cannot do, it cannot do because the capability is absent from the image ([Physics](09-physics.md)).
+
+## Planned surfaces
+
+Thin SDKs are designed, not shipped: language wrappers (TypeScript first, then Python) over the same domain APIs the CLI consumes, so code can act as an operator — spawn a world, assign a task, collect the result — without shelling out. Today the shipped operator surfaces are the CLI and the web UI.
+
+The runtime stack has further designed-but-unshipped layers, each with its own record: a runtime normalization layer inside worlds ([ADR-008](decisions/008-rivet-runtime-layer.md)), multi-provider and subscription auth behind it ([ADR-010](decisions/010-pi-mono-multi-provider.md)), and the Architect's messaging channels ([ADR-009](decisions/009-zeroclaw-as-claw.md), [ADR-012](decisions/012-organization-manifest.md)).
 
 ## Code style
 
@@ -112,4 +130,5 @@ The [gate](06-gate.md) is a separate long-running host container that owns cooki
 - [Concepts](02-concepts.md) — the abstractions these packages implement.
 - [Gate](06-gate.md) — the host-side broker container.
 - [Testing](07-testing.md) — how the layers are covered.
+- [Decisions](decisions/README.md) — why the stack, the layering, and the container model are what they are.
 - [`../CONTRIBUTING.md`](../CONTRIBUTING.md) · [`contributing/releasing.md`](contributing/releasing.md) · [`contributing/update-system.md`](contributing/update-system.md) — contributor runbooks.

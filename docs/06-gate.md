@@ -2,7 +2,11 @@
 
 > 🚧 **Experimental.** The gate container, the `gate:` block, the Node SDK, and the cookie-sync extension are in active development — schema, CLI, and behaviour will change without notice. Don't depend on it in production.
 
-The **gate** is a long-running Docker container on the host (`spwn gate start`). It owns three concerns no individual world should:
+The gate is the one sanctioned crossing between the host and a world. Everything else about a world is closed by construction; the gate is where declared, scoped capability enters — a host service surfaced inside the world as an ordinary command, so the agent sees an element that exists and never an endpoint ([Physics](09-physics.md)).
+
+Four concerns sit behind that: **capability bridging** (external services as plain CLI commands), **credential custody** (secrets and cookies stay host-side, never in a world's image or filesystem), **session relay** (operator traffic in, agent output back), and **supervision** (the bridged capability is spawned, health-checked, and respawned by the gate, not by the agent).
+
+The shipped implementation is a long-running Docker container on the host (`spwn gate start`). It owns three concerns no individual world should:
 
 1. **Cookie sync** — receives session cookies from the `spwn-cookie-sync` Chrome extension at `/sync/<provider>` and persists them under `~/.spwn/credentials/<provider>/cookies.json`.
 2. **MCP routing** — exposes `/mcp/<element>/*` for every registered element (Notion proxy, Gmail/Gcal via `gws`, every catalog tool loaded from `~/.spwn/gate/tools/`).
@@ -70,7 +74,23 @@ dependencies:
 
 The compile pipeline materializes this as `/etc/spwn/policy/<short>.json` in the agent's image. The catalog tool's wrapper consults it via `spwn-policy-check <tool> <method>` (installed by `spwn:mcp2cli`) and rejects denied calls before they hit the gate. Merging is deny-takes-precedence when multiple agents in one world hold conflicting policies.
 
+## Invariants
+
+These hold whatever the implementation looks like:
+
+1. **One crossing.** The gate connection is the only thing that crosses the container boundary; the Docker socket is never passed into a world.
+2. **Bridges are declared, then verified.** A capability reaches a world only through its manifests, and only what was declared appears in the agent's faculties.
+3. **Credentials never enter the world.** The wrapper carries the request; the gate holds the cookie or key and makes the authenticated call host-side.
+4. **Scoping is per capability, not per service.** A bridge exposes named methods, and per-agent allow/deny keeps write-capable or human-in-the-loop methods out of agent reach by construction.
+5. **Runtime-agnostic.** The bridge surfaces as ordinary commands, so any runtime that can run a shell can use it; swapping runtimes never touches the gate.
+
+## Open question: communication between worlds
+
+Undecided — whether two worlds should be able to reach each other. No direct communication (where things stand today) keeps isolation strong but rules out collaborative patterns; a host relay through the gate keeps isolation clean at the cost of latency and a host bottleneck; direct networking breaks the isolation model outright. Leaning toward the host relay.
+
 ## Related
 
 - [Primitives](04-primitives.md) — the `gate:` block on a `tool.yaml`.
+- [Physics](09-physics.md) — why a bridged capability is modelled as an element.
 - [Architecture](05-architecture.md) — where the gate sits relative to worlds.
+- [ADR-001](decisions/001-gate-over-socket.md) · [ADR-006](decisions/006-acp-inside-container.md) · [ADR-007](decisions/007-rust-container-gate.md) — the transport abstraction and the two-sided design that preceded the shipped host broker.

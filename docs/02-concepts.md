@@ -62,3 +62,4 @@ spwn is built spec-first — the test suite is the living specification. See [Te
 - [Getting started](01-getting-started.md) — install and first agent.
 - [Primitives](04-primitives.md) — the on-disk shape of each block.
 - [Architecture](05-architecture.md) — how the packages that own these abstractions are layered.
+- [Worlds](08-worlds.md) · [Physics](09-physics.md) · [The Mind](10-mind.md) — the design behind the three abstractions.

@@ -23,6 +23,11 @@ Knowledge is world-scoped, not held in the Mind. A spwn project lives **in the r
 | Monorepo layout, layered dependency graph, DooD, code style | [`docs/05-architecture.md`](docs/05-architecture.md) |
 | Host-side gate: cookies, MCP routing, browser sidecar | [`docs/06-gate.md`](docs/06-gate.md) |
 | Testing strategy, layer pyramid, running the suites | [`docs/07-testing.md`](docs/07-testing.md) |
+| How a world runs, the Backend port, mounts and what persists | [`docs/08-worlds.md`](docs/08-worlds.md) |
+| Constants, laws, elements, the world context an agent reads | [`docs/09-physics.md`](docs/09-physics.md) |
+| Identity, skills, memory; Dream, Sleep, versioning a Mind | [`docs/10-mind.md`](docs/10-mind.md) |
+| The web UI and the API behind it | [`docs/11-observatory.md`](docs/11-observatory.md) |
+| Why a choice was made | [`docs/decisions/`](docs/decisions/README.md) |
 | Automations (cron + fs triggers) | [`docs/automations.md`](docs/automations.md) |
 | Worked examples | [`docs/recipes.md`](docs/recipes.md) |
 | Built-in `spwn:*` catalog | [`docs/dependency-catalog.md`](docs/dependency-catalog.md) |
