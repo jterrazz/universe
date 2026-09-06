@@ -11,11 +11,6 @@ import { cli } from '../cli.specification.js';
  * `activity-log.spec.yaml` beside this file, with `{{hex}}` ids and
  * `{{iso8601}}` timestamps.
  *
- * The lazy-creation spec stays here for a different reason: `files:` in a
- * multi-run document is evaluated once the session has finished, so
- * "absent after the first run, present after the second" needs two
- * results, each with its own working directory.
- *
  * Each spec uses an isolated `$WORKDIR/spwn-home` so its log starts empty.
  * Every result binds with `await using` (rule B5).
  */
@@ -164,16 +159,5 @@ describe('activity event emissions', () => {
         const events = parseActivity(result.file(ACTIVITY_PATH).content);
         const ids = new Set(events.map((e) => e.id));
         expect(ids.size).toBe(events.length);
-    });
-
-    test('activity.jsonl is created only on the first event', async () => {
-        // Given - a no-op invocation writes no log
-        await using before = await isolated().exec('--version');
-        expect(before.file(ACTIVITY_PATH).exists).toBe(false);
-
-        // Then - the first real event creates the file
-        await using after = await isolated().exec('agent create neo');
-        expect(after.exitCode).toBe(0);
-        expect(after.file(ACTIVITY_PATH).exists).toBe(true);
     });
 });
