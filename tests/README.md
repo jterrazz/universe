@@ -111,8 +111,8 @@ Key design points:
 All TypeScript E2E specs run under `@jterrazz/test` against one
 specification runner:
 
-| File                             | Purpose                                                                                    |
-| -------------------------------- | ------------------------------------------------------------------------------------------ |
+| File                             | Purpose                                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `specs/cli/cli.specification.ts` | Exports `cli`, the single runner bound to `.artifacts/go/spwn`, docker-aware, with an `env` registry |
 
 One runner, one mental model. Whether a spec happens to touch Docker is
