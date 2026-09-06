@@ -123,7 +123,18 @@ export default defineConfig({
     fullyParallel: false,
     retries: 0,
     workers: 1,
-    reporter: [['list'], ['html', { open: 'never', outputFolder: '../playwright-report' }]],
+    /*
+     * Playwright writes under the `tests` package's `.artifacts/`, like
+     * every other tool: the traces, screenshots and videos of a failed
+     * run in `results/`, the HTML report in `report/`. Both paths are
+     * relative to this config file, which sits one level below that
+     * root.
+     */
+    outputDir: '../.artifacts/playwright/results',
+    reporter: [
+        ['list'],
+        ['html', { open: 'never', outputFolder: '../.artifacts/playwright/report' }],
+    ],
 
     use: {
         baseURL: 'http://localhost:1420',
