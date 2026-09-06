@@ -1,0 +1,12 @@
+description: talking to a declared agent with no live world nudges at spwn up
+fixture: $FIXTURES/single-agent/
+env: isolated
+runs:
+    - command: agent talk neo hello
+      exit: 1
+      stderr: |4+
+          
+            Error: agent "neo" is not in any active world
+
+            Spawn one with: spwn up --agent neo -w <workspace>
+
