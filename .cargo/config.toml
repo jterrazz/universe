@@ -1,0 +1,8 @@
+# Cargo writes under `.artifacts/` like every other tool in this repo,
+# rather than dropping a `target/` beside the Tauri crate. Cargo finds
+# this file by walking up from the working directory, so it applies to
+# `cargo tauri dev|build` run from apps/web as well as to a plain
+# `cargo` invoked inside apps/web/src-tauri; the path is relative to
+# this file's parent, which is the repository root.
+[build]
+target-dir = ".artifacts/cargo"

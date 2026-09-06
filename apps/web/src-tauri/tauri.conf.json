@@ -4,7 +4,7 @@
     "identifier": "sh.spwn.app",
     "build": {
         "devUrl": "http://localhost:1420",
-        "frontendDist": "../out",
+        "frontendDist": "../.artifacts/next/export",
         "beforeDevCommand": "npm run dev -- -p 1420",
         "beforeBuildCommand": "npm run build:static"
     },

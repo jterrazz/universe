@@ -1,15 +1,9 @@
 # Build output
 .artifacts/
 e2e.test
-.next/
-out/
-*.tsbuildinfo
 
 # Dependencies
 node_modules/
-
-# Rust / Tauri
-target/
 
 # OS junk
 .DS_Store
