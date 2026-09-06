@@ -129,7 +129,7 @@ There are two ways to write a spec, and the first is the default.
 A terminal session is already a specification: a command, its exit code,
 what it printed, what it left on disk. Most of this suite says exactly
 that, in a YAML document that lives **beside** the spec it belongs to
-(never under `expected/`, which holds goldens, not scenarios):
+(never under `_expected/`, which holds goldens, not scenarios):
 
 ```yaml
 description: a valid project prints a clean success report
@@ -148,8 +148,8 @@ runs:
 ```
 
 - `fixture:` is `.fixture()`: `$FIXTURES/<name>/` for the shared pool at
-  `specs/fixtures/`, a bare name for a feature-local `fixtures/` overlay,
-  a **list** to layer them in order.
+  `specs/_fixtures/`, a bare name for a feature-local `_fixtures/`
+  overlay, a **list** to layer them in order.
 - `env:` names an environment set registered in
   `cli.specification.ts` — today only `isolated`, which moves
   `SPWN_HOME` onto the spec's temp cwd. Inline `KEY=value` also works.
@@ -159,7 +159,10 @@ runs:
 - `stdout:`/`stderr:` are byte-exact. `|` keeps the final newline, `|-`
   drops it. Absent asserts an EMPTY stream.
 - `files:` asserts what the run left behind, in four forms: `contains`
-  (one needle or a list), `equals`, `exists`, `absent`.
+  (one needle or a list), `equals`, `exists`, `absent`. Each run's
+  mapping is read against the working directory as THAT run left it, so
+  a path may be `absent` for one run and there for the next —
+  `logs/lazily-created-log.spec.yaml` states exactly that.
 - The whole [token vocabulary](https://github.com/jterrazz/package-test/blob/main/docs/06-tokens.md)
   works in the streams and in `files:` texts — `{{workdir}}`, `{{path}}`,
   `{{time}}`, `{{iso8601}}`, `{{hex}}`, and `{{string#ref}}` for a value
@@ -185,11 +188,6 @@ stays `{{workdir}}` wherever the line moved to. **Read every regenerated
 document before committing it**: a value the framework could not
 recognise as volatile (a temp path it did not substitute, a random agent
 name, a clock) comes back as a literal and has to be tokenised by hand.
-
-One hazard worth knowing: `files:` in a multi-run document is evaluated
-once the SESSION has finished, not after the run it is attached to.
-"Absent after the first command, present after the second" needs two
-results in code — see `logs/events.test.ts`.
 
 #### The chain — `<aspect>.test.ts`
 
@@ -317,6 +315,15 @@ For a chain instead:
 | Go E2E      | `*_test.go` (in `tests/e2e/`)                 | `spawn_test.go`           |
 | TS document | `<case>.spec.yaml` (in `specs/cli/<domain>/`) | `valid-project.spec.yaml` |
 | TS chain    | `<aspect>.test.ts` (in `specs/cli/<domain>/`) | `json-report.test.ts`     |
+
+Under `specs/`, what a spec STANDS ON carries a leading underscore —
+`_fixtures/` and `_expected/` — while a spec's own folder never does, and
+the framework resolves no other name.
+
+The pool at `specs/_fixtures/` is what SEVERAL leaves share: a directory
+only one spec folder reaches for belongs beside that folder as
+`<leaf>/_fixtures/<name>/`, which `pnpm -C tests lint` reports and
+`npx jterrazz-test-check specs --fix` moves.
 
 ## Test Function Naming
 
