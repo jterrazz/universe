@@ -104,8 +104,8 @@ importers:
         specifier: ^1.0.0
         version: 1.19.14(hono@4.12.14)
       '@jterrazz/test':
-        specifier: ^9.1.0
-        version: 9.1.0(@types/node@25.6.0)(typescript@7.0.2)(vitest@4.1.10(@types/node@25.6.0)(msw@2.15.0(@types/node@25.6.0)(typescript@7.0.2))(vite@8.0.8(@types/node@25.6.0)(jiti@2.7.0)(yaml@2.8.3)))
+        specifier: ^13.0.1
+        version: 13.0.1(@types/node@25.6.0)(playwright@1.59.1)(typescript@7.0.2)(vitest@4.1.10(@types/node@25.6.0)(msw@2.15.0(@types/node@25.6.0)(typescript@7.0.2))(vite@8.0.8(@types/node@25.6.0)(jiti@2.7.0)(yaml@2.8.3)))
       '@jterrazz/typescript':
         specifier: ^7.0.0
         version: 7.0.0(@volar/typescript@2.4.28)(eslint@10.2.0(jiti@2.7.0))(oxc-resolver@11.21.3)(unrun@0.2.36)
@@ -631,12 +631,22 @@ packages:
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
 
-  '@jterrazz/test@9.1.0':
-    resolution: {integrity: sha512-EbwTmYzVCOfmrxVqlH80eZ3h2Fu4KQDkH2LxhB/UCHgdQnEvock8eA0ZMkq3zcik8ErkvXPwoeSYXQZDQX+lew==}
+  '@jterrazz/test@13.0.1':
+    resolution: {integrity: sha512-ETut7YJfnGkrUT5pajaMFa8FwMKDVYizpOUNhutBRdRoIsvytkg8uUOuLSB3sSF600VYda/XOPVf9TwhztHcKQ==}
     engines: {node: '>=20'}
     hasBin: true
     peerDependencies:
+      appium: ^3.0.0
+      playwright: ^1.49.0
       vitest: ^4.1.10
+      webdriverio: ^9.30.0
+    peerDependenciesMeta:
+      appium:
+        optional: true
+      playwright:
+        optional: true
+      webdriverio:
+        optional: true
 
   '@jterrazz/typescript@7.0.0':
     resolution: {integrity: sha512-QIAL9cZIG6LxljpcxkHHfe5h4XEeKt2lj5r7CAoFlt2HGF94INBKbQvVHru5siWAXgogTga7K0cSlklaZgP+GQ==}
@@ -5768,7 +5778,7 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@jterrazz/test@9.1.0(@types/node@25.6.0)(typescript@7.0.2)(vitest@4.1.10(@types/node@25.6.0)(msw@2.15.0(@types/node@25.6.0)(typescript@7.0.2))(vite@8.0.8(@types/node@25.6.0)(jiti@2.7.0)(yaml@2.8.3)))':
+  '@jterrazz/test@13.0.1(@types/node@25.6.0)(playwright@1.59.1)(typescript@7.0.2)(vitest@4.1.10(@types/node@25.6.0)(msw@2.15.0(@types/node@25.6.0)(typescript@7.0.2))(vite@8.0.8(@types/node@25.6.0)(jiti@2.7.0)(yaml@2.8.3)))':
     dependencies:
       better-sqlite3: 12.11.1
       mockdate: 3.0.5
@@ -5779,6 +5789,8 @@ snapshots:
       vitest: 4.1.10(@types/node@25.6.0)(msw@2.15.0(@types/node@25.6.0)(typescript@7.0.2))(vite@8.0.8(@types/node@25.6.0)(jiti@2.7.0)(yaml@2.8.3))
       vitest-mock-extended: 5.0.0(typescript@7.0.2)(vitest@4.1.10(@types/node@25.6.0)(msw@2.15.0(@types/node@25.6.0)(typescript@7.0.2))(vite@8.0.8(@types/node@25.6.0)(jiti@2.7.0)(yaml@2.8.3)))
       yaml: 2.9.0
+    optionalDependencies:
+      playwright: 1.59.1
     transitivePeerDependencies:
       - '@node-rs/xxhash'
       - '@opentelemetry/api'
