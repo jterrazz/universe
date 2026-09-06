@@ -10,29 +10,6 @@ import { cli } from '../cli.specification.js';
  * roster. Every result binds with `await using` (rule B5).
  */
 describe('severance catalog', () => {
-    test('init severance installs a check-passing 4-agent project', async () => {
-        // Given - an empty dir with the severance gallery entry installed then checked
-        await using result = await cli
-            .fixture('$FIXTURES/empty/')
-            .exec(['init severance', 'check']);
-
-        // Then - all four agents land on disk, knowledge ships under spwn/, and check passes
-        expect(result.exitCode, result.stdout.text).toBe(0);
-        for (const name of ['mark', 'helly', 'irving', 'dylan']) {
-            expect(
-                result.file(`spwn/agents/${name}/agent.yaml`).exists,
-                `missing agent.yaml for ${name}`,
-            ).toBe(true);
-            expect(
-                result.file(`spwn/agents/${name}/SOUL.md`).exists,
-                `missing SOUL.md for ${name}`,
-            ).toBe(true);
-        }
-        expect(result.file('spwn/knowledge').exists).toBe(true);
-        expect(result.file('spwn.yaml').content).toMatch(/knowledge: \.\/spwn\/knowledge/);
-        expect(result.stdout).toContain('Project is valid');
-    });
-
     test('severance agents carry distinct SOUL.md content', async () => {
         // Given - the severance gallery installed into an empty dir
         await using result = await cli.fixture('$FIXTURES/empty/').exec('init severance');

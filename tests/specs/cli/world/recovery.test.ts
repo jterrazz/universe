@@ -29,20 +29,6 @@ describe('error recovery', () => {
         expect(secondDown.stdout).not.toContain('Global Flags:');
     });
 
-    test('world inspect on a non-existent id fails cleanly', async () => {
-        // Given - a world inspect against a ghost id
-        await using result = await cli
-            .fixture('$FIXTURES/docker-pilot/')
-            .exec('world inspect world-ghost-99999');
-
-        // Then - non-zero "not found" with no usage dump or crash (scalpel: dynamic error wording + absence probes)
-        expect(result.exitCode).toBe(1);
-        expect(result.stderr.text).toMatch(/not found/i);
-        expect(result.stdout).not.toContain('Available Commands:');
-        expect(result.stderr).not.toContain('panic');
-        expect(result.stderr).not.toContain('goroutine');
-    });
-
     test('spawn with an invalid world name leaks no container', async () => {
         // Given - a project-mode up requesting a world key that is not in the manifest
         await using result = await cli

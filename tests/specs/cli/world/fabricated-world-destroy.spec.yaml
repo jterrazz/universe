@@ -1,0 +1,11 @@
+description: destroying a fabricated world id fails gracefully
+fixture: $FIXTURES/docker-pilot/
+runs:
+    - command: down world-fake-99999
+      exit: 1
+      stderr: |4+
+          
+            → Destroying world...
+            ✗ Destroy failed           world world-fake-99999 not found
+              Check that world "world-fake-99999" exists with "spwn world list"
+

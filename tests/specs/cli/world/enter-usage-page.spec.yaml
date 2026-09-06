@@ -1,0 +1,15 @@
+description: world enter --help renders the enter usage block
+fixture: $FIXTURES/empty/
+runs:
+    - command: world enter --help
+      exit: 0
+      stdout: |+
+          
+          Open an interactive shell inside a running world
+
+          Usage:
+            spwn world enter <world-id> [flags]
+
+          Flags:
+            -h, --help   help for enter
+

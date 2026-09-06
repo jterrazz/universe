@@ -6,10 +6,11 @@ import { cli } from '../cli.specification.js';
  * World destroy (`spwn down`) under docker-aware mode. Project-mode bare
  * `spwn down` destroys every world in the project; the richer per-id
  * banners ("Stopped agent", "Removed container", "Mind persisted") only
- * fire on the explicit `spwn down <id>` path. Error cases are pinned as
- * full stderr goldens where the wording is stable, and probed with a
- * regex where the id is arbitrary. Every result binds with `await using`
- * (rule B5).
+ * fire on the explicit `spwn down <id>` path. Every spec here brings a
+ * world up and reads the container back, which is why they stay chains;
+ * each result binds with `await using` (rule B5). The two refusals that
+ * spawn nothing — an undeclared world key, a pre-2026 id — are documents
+ * beside this file.
  */
 describe('world destroy', () => {
     test('destroys a running project world', async () => {
@@ -52,31 +53,5 @@ describe('world destroy', () => {
         expect(result.stderr).toContain('Stopped agent');
         expect(result.stderr).toContain('Removed container');
         expect(result.stderr).toContain('Mind persisted');
-    });
-
-    test('destroy non-existent world fails cleanly', async () => {
-        // Given - a down against a world key that does not exist
-        await using result = await cli
-            .fixture('$FIXTURES/docker-pilot/')
-            .exec('down world-nonexistent-00000');
-
-        // Then - exits non-zero with the canonical "not found" banner (full stderr golden)
-        expect(result.exitCode).toBe(1);
-        expect(result.stderr).toMatch('destroy-missing-world.txt');
-    });
-
-    test('destroy rejects legacy id shapes cleanly', async () => {
-        // Given - a user types an id in a pre-2026 format
-        for (const legacyId of ['w-acme-12345', 'spwn-world-acme-12345']) {
-            await using result = await cli
-                .fixture('$FIXTURES/docker-pilot/')
-                .exec(`down ${legacyId}`);
-
-            // Then - non-zero with an actionable "not found" message, no crash (scalpel: arbitrary id, regex + absence probes)
-            expect(result.exitCode).not.toBe(0);
-            expect(result.stderr).not.toContain('panic');
-            expect(result.stderr).not.toContain('goroutine');
-            expect(result.stderr.text).toMatch(/not found|does not exist|unknown world/i);
-        }
     });
 });

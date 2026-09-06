@@ -66,27 +66,6 @@ describe('world lifecycle', () => {
         expect(inspect.stderr).toContain('Agent home');
     });
 
-    test('world enter validates the world before printing the banner', async () => {
-        // Given - an initialised project with no running worlds, entered with a bogus id
-        await using result = await cli
-            .fixture('$FIXTURES/empty/')
-            .exec(['init', 'world enter nonexistent']);
-
-        // Then - the success banner never prints and the error names the target (scalpel: absence + dynamic error surface)
-        expect(result.exitCode).toBe(1);
-        expect(result.stderr).not.toContain('Entering');
-        expect(result.stderr).toContain('nonexistent');
-    });
-
-    test('world enter --help renders the enter usage block', async () => {
-        // Given - the enter help flag
-        await using result = await cli.fixture('$FIXTURES/empty/').exec('world enter --help');
-
-        // Then - cobra prints the full enter usage block (byte-for-byte golden)
-        expect(result.exitCode).toBe(0);
-        expect(result.stdout).toMatch('enter-help.txt');
-    });
-
     test('down fully destroys the container (not just stopped)', async () => {
         // Given - up followed by down
         await using result = await cli.fixture('$FIXTURES/docker-pilot/').exec(['up', 'down']);

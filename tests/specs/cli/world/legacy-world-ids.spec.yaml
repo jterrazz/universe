@@ -1,0 +1,19 @@
+description: a pre-2026 world id is refused with an actionable not-found message
+fixture: $FIXTURES/docker-pilot/
+runs:
+    - command: down w-acme-12345
+      exit: 1
+      stderr: |4+
+          
+            → Destroying world...
+            ✗ Destroy failed           world w-acme-12345 not found
+              Check that world "w-acme-12345" exists with "spwn world list"
+
+    - command: down spwn-world-acme-12345
+      exit: 1
+      stderr: |4+
+          
+            → Destroying world...
+            ✗ Destroy failed           world spwn-world-acme-12345 not found
+              Check that world "spwn-world-acme-12345" exists with "spwn world list"
+

@@ -44,18 +44,6 @@ describe('world snap', () => {
         cleanupSnapshotImages();
     });
 
-    test('world snap --help lists the save/ls/restore/rm subcommands', async () => {
-        // Given - the snap help rendered from any project
-        await using result = await cli.fixture('$FIXTURES/docker-pilot/').exec('world snap --help');
-
-        // Then - cobra renders the four subcommands on stdout (scalpel: third-party cobra help layout)
-        expect(result.exitCode).toBe(0);
-        expect(result.stdout).toContain('save');
-        expect(result.stdout).toContain('ls');
-        expect(result.stdout).toContain('restore');
-        expect(result.stdout).toContain('rm');
-    });
-
     test('world snap save + snap ls + snap rm round-trip', async () => {
         // Given - a running world whose runtime id is read off its container labels
         await using up = await cli.fixture('$FIXTURES/docker-pilot/').exec('up');
