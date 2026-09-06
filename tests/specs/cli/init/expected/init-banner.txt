@@ -1,4 +1,0 @@
-
-  ✓ Initialised spwn project demo-project
-
-
