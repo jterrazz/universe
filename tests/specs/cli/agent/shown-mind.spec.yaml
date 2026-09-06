@@ -1,0 +1,25 @@
+description: show prints the agent details with all its mind layers
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: agent create neo
+      exit: 0
+      stderr: |4+
+          
+            → Creating agent "neo"...
+            ✓ Created agent            neo
+            ✓ Created soul             SOUL.md
+
+            ✓ Spawn with: spwn up --agent neo
+
+    - command: agent show neo
+      exit: 0
+      stderr: |4+
+          
+            Agent:       neo
+            Path:        {{path}}
+            World:       unattached
+
+            playbooks/   (empty)
+            journal/     (empty)
+

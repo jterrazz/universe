@@ -1,0 +1,22 @@
+description: talk to an agent with no world fails with a helpful error
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: agent create neo
+      exit: 0
+      stderr: |4+
+          
+            → Creating agent "neo"...
+            ✓ Created agent            neo
+            ✓ Created soul             SOUL.md
+
+            ✓ Spawn with: spwn up --agent neo
+
+    - command: agent talk neo hello
+      exit: 1
+      stderr: |4+
+          
+            Error: agent "neo" is not in any active world
+
+            Spawn one with: spwn up --agent neo -w <workspace>
+

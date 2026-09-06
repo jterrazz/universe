@@ -11,36 +11,13 @@ import { cli } from '../cli.specification.js';
  * container uses the mock `/usr/local/bin/claude` shipped in the test
  * image — otherwise the tests would need real Anthropic credentials.
  *
- * Every result binds with `await using` so the spawned container is
- * force-removed at scope exit (rule B5).
+ * Every spec here brings a world up and reads the container back, which
+ * is why they stay chains; every result binds with `await using` so the
+ * spawned container is force-removed at scope exit (rule B5). The two
+ * refusal paths that spawn nothing — an unattached agent, an agent that
+ * does not exist — are documents beside this file.
  */
 describe('agent talk', () => {
-    test('talk to an unattached agent fails cleanly', async () => {
-        // Given - an orphan agent on disk with no active world, talked to
-        await using result = await cli
-            .fixture('$FIXTURES/docker-pilot/')
-            .exec(['agent create orphan', 'agent talk orphan hello']);
-
-        // Then - exit 1 with a friendly no-world error and no panic (scalpel: case-insensitive message probe)
-        expect(result.exitCode).toBe(1);
-        const stderr = result.stderr.text;
-        expect(stderr).toMatch(/not in any active world|no active world/i);
-        expect(result.stderr).not.toContain('panic');
-    });
-
-    test('talk to a non-existent agent hints at agent create', async () => {
-        // Given - talk against an agent that does not exist
-        await using result = await cli
-            .fixture('$FIXTURES/docker-pilot/')
-            .exec('agent talk does-not-exist hello');
-
-        // Then - exit 1 with the friendly create hint, no raw Go wrapper noise
-        expect(result.exitCode).toBe(1);
-        expect(result.stderr).not.toContain('exit status 1');
-        expect(result.stderr).not.toContain('panic');
-        expect(result.stderr).toMatch('talk-missing-agent.txt');
-    });
-
     test("talk against a live world exec's the runtime inside the container", async () => {
         // Given - a world brought up, then talked to with the mock runtime image
         await using result = await cli

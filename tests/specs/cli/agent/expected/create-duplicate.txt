@@ -1,5 +1,0 @@
-
-  → Creating agent "neo"...
-  ✗ Agent creation failed    agent "neo" already exists
-    Run "spwn agent rm neo" first, or pass --force to re-scaffold
-

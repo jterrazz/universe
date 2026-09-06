@@ -1,0 +1,24 @@
+description: a forked agent is inspectable via show
+fixture: $FIXTURES/single-agent/
+runs:
+    - command: agent fork neo neo-clone
+      exit: 0
+      stderr: |4+
+          
+            → Forking "neo" -> "neo-clone"...
+            ✓ Source                   neo
+            ✓ Target                   neo-clone
+            ✓ Layers copied            playbooks, journal
+            ✓ Added world to spwn.yaml neo-clone
+
+    - command: agent show neo-clone
+      exit: 0
+      stderr: |4+
+          
+            Agent:       neo-clone
+            Path:        {{workdir}}/spwn/agents/neo-clone
+            World:       unattached
+
+            playbooks/   .gitkeep (0B)
+            journal/     .gitkeep (0B)
+

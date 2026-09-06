@@ -10,27 +10,14 @@ import { cli } from '../cli.specification.js';
  * binary) inside the container and then exits, leaving no Mind directory
  * behind and no new agent in `agent ls`.
  *
- * The happy-path tests pin `SPWN_BASE_IMAGE=spwn-test:latest` so the
- * container uses the mock runtime binary. Every result binds with
- * `await using` so the spawned container is force-removed at scope exit
- * (rule B5).
+ * Both specs here spawn a container and read it back, which is why they
+ * stay chains: they pin `SPWN_BASE_IMAGE=spwn-test:latest` so the world
+ * uses the mock runtime, read the world id off the container labels, and
+ * bind every result with `await using` so the container is force-removed
+ * at scope exit (rule B5). The refusal path — an ephemeral with no world
+ * — spawns nothing and is a document beside this file.
  */
 describe('agent --ephemeral (NPC)', () => {
-    test('ephemeral without --world fails with a helpful error', async () => {
-        // Given - an ephemeral dispatched with no world specified
-        await using result = await cli
-            .fixture('$FIXTURES/docker-pilot/')
-            .exec('agent --ephemeral "do something"');
-
-        // Then - exit 1 with a friendly error and no runtime crash noise (scalpel: message probe over dynamic wording)
-        expect(result.exitCode).toBe(1);
-        expect(result.stderr).not.toContain('TypeError');
-        expect(result.stderr).not.toContain('panic');
-        expect(result.stderr).not.toContain('goroutine');
-        const stderr = result.stderr.text;
-        expect(stderr).toMatch(/--world|world specified|active worlds/i);
-    });
-
     test('ephemeral dispatches a task into a running world', async () => {
         // Given - a world brought up, whose runtime id is read off the container labels
         await using up = await cli
