@@ -219,7 +219,7 @@ make test-e2e-compile
 
 Purpose:
 
-- Verify the compiled `bin/spwn` from a user's perspective.
+- Verify the compiled `.artifacts/go/spwn` from a user's perspective.
 - Assert stdout/stderr/files/containers with descriptive helpers.
 
 Rules:
@@ -858,8 +858,8 @@ Fix:
 1. Generate command tree:
 
 ```bash
-bin/spwn --help
-bin/spwn <cmd> --help
+.artifacts/go/spwn --help
+.artifacts/go/spwn <cmd> --help
 ```
 
 2. Add `tests/contracts/cli-commands.yaml`.

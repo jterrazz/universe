@@ -1,5 +1,5 @@
 # Build output
-bin/
+.artifacts/
 dist/
 e2e.test
 .next/

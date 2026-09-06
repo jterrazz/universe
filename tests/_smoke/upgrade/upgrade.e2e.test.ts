@@ -27,7 +27,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest';
  * reap them even if the test throws mid-flight.
  */
 
-const SPWN_BIN = resolve(import.meta.dirname, '../../../bin/spwn');
+const SPWN_BIN = resolve(import.meta.dirname, '../../../.artifacts/go/spwn');
 const TEST_LABEL = `smoke-upgrade-${process.pid}-${Date.now()}`;
 
 let workdir: string;

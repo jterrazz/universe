@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Install bin/spwn into ~/.local/bin (or $INSTALL_DIR if set) and make
-# Sure that dir is on PATH.
+# Install .artifacts/go/spwn into ~/.local/bin (or $INSTALL_DIR if set) and
+# make sure that dir is on PATH.
 #
-# Expected precondition: bin/spwn already built (run `make build` first).
+# Expected precondition: the binary is already built (run `make build` first).
 # This script is invoked by `make install`.
 
 set -euo pipefail
@@ -10,7 +10,7 @@ set -euo pipefail
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 PATH_EXPORT='export PATH="$HOME/.local/bin:$PATH"'
 
-BIN="bin/spwn"
+BIN=".artifacts/go/spwn"
 if [ ! -x "$BIN" ]; then
     echo "error: $BIN not found — run 'make build' first" >&2
     exit 1

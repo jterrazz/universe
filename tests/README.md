@@ -50,7 +50,7 @@ cd tests && npx tsc --noEmit     # type-check only
 - **Go 1.25+**: Required for Go tests.
 - **Node.js 20+**: Required for TypeScript E2E tests.
 - **Test image**: Run `make test-image` before E2E tests. This builds the `spwn-test:latest` Docker image from `tests/_simulators/Dockerfile.test`.
-- **Binary**: TypeScript E2E tests require `bin/spwn`. Run `make build` first.
+- **Binary**: TypeScript E2E tests require `.artifacts/go/spwn`. Run `make build` first.
 
 ## How runtime simulators work
 
@@ -113,7 +113,7 @@ specification runner:
 
 | File                             | Purpose                                                                                    |
 | -------------------------------- | ------------------------------------------------------------------------------------------ |
-| `specs/cli/cli.specification.ts` | Exports `cli`, the single runner bound to `bin/spwn`, docker-aware, with an `env` registry |
+| `specs/cli/cli.specification.ts` | Exports `cli`, the single runner bound to `.artifacts/go/spwn`, docker-aware, with an `env` registry |
 
 One runner, one mental model. Whether a spec happens to touch Docker is
 a property of what it asserts on, not a choice made at setup time.

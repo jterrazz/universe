@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const API_PORT = 9877;
 const API_BASE = `http://localhost:${API_PORT}`;
-const BIN = resolve(currentDir, '../../../bin/spwn');
+const BIN = resolve(currentDir, '../../../.artifacts/go/spwn');
 
 /**
  * API helper - calls the Go API directly (faster than UI for setup).

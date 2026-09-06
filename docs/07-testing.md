@@ -18,7 +18,7 @@ spwn is built **spec-first**: the test suite is the living specification of what
 | **E2E (TS)** | `tests/specs/cli/`, `tests/_smoke/` | ~2–5min | built binary |
 | **Web E2E** | `tests/web/` | varies | Playwright + real Next.js + Go API |
 
-Each domain tests only its own contract. Cross-domain flows (spawn world + agent → verify journal) are the CLI's responsibility, exercised by the TypeScript E2E suite against the compiled `bin/spwn`. The TS E2E suite uses [`@jterrazz/test`](https://github.com/jterrazz/package-test); runtime simulators in `tests/_simulators/` (mock Claude/Codex CLIs, baked into `spwn-test:latest`) stand in for the real runtimes.
+Each domain tests only its own contract. Cross-domain flows (spawn world + agent → verify journal) are the CLI's responsibility, exercised by the TypeScript E2E suite against the compiled `.artifacts/go/spwn`. The TS E2E suite uses [`@jterrazz/test`](https://github.com/jterrazz/package-test); runtime simulators in `tests/_simulators/` (mock Claude/Codex CLIs, baked into `spwn-test:latest`) stand in for the real runtimes.
 
 ### Two forms, one runner
 
@@ -44,7 +44,7 @@ make test-gate-node      # apps/gate vitest (sidecar + SDK)
 make test-image          # build spwn-test:latest (runtime simulators)
 make test-go-e2e         # Go world E2E (Architect/world/container)
 make test-compile-e2e    # Go image-build E2E (compile + Dockerfile rendering)
-make test-cli            # TypeScript CLI E2E against compiled bin/spwn
+make test-cli            # TypeScript CLI E2E against the compiled binary
 make test-smoke          # real-build smoke: spwn init → up → tool probe
 make test-web            # Playwright web E2E (real Next.js + Go API + Chromium)
 ```

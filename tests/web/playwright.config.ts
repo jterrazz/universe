@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(currentDir, '../..');
-const BIN = resolve(REPO_ROOT, 'bin/spwn');
+const BIN = resolve(REPO_ROOT, '.artifacts/go/spwn');
 const SPWN_HOME = process.env.SPWN_WEB_E2E_HOME ?? mkdtempSync(resolve(tmpdir(), 'spwn-web-e2e-'));
 const SPWN_PROJECT =
     process.env.SPWN_WEB_E2E_PROJECT ?? mkdtempSync(resolve(tmpdir(), 'spwn-web-e2e-project-'));

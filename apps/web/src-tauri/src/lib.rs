@@ -212,12 +212,16 @@ fn augmented_path() -> String {
 
 fn which_spwn(augmented_path: &str) -> String {
     // In dev mode (`cargo tauri dev`), prefer the local build at
-    // ../../bin/spwn (relative to apps/web/src-tauri/) so
+    // ../../.artifacts/go/spwn (relative to apps/web/src-tauri/) so
     // `make build && npm run tauri dev` uses the freshly compiled
     // binary instead of whatever's installed system-wide. This
     // prevents the "I just built it but the app still uses the old
     // binary" confusion.
-    let dev_candidates = ["../../bin/spwn", "../../../bin/spwn", "./bin/spwn"];
+    let dev_candidates = [
+        "../../.artifacts/go/spwn",
+        "../../../.artifacts/go/spwn",
+        "./.artifacts/go/spwn",
+    ];
     for rel in &dev_candidates {
         let path = std::path::Path::new(rel);
         if path.exists() {

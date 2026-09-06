@@ -5,9 +5,9 @@ import { afterAll } from 'vitest';
 /**
  * CLI specification runner for spwn — the single product runner.
  *
- * The spwn binary IS the product: every spec exercises `bin/spwn`
- * directly, never a tool underneath it. Each spec runs in a fresh temp
- * cwd; `.fixture('$FIXTURES/<project>/')` spreads a committed project
+ * The spwn binary IS the product: every spec exercises the compiled
+ * binary directly, never a tool underneath it. Each spec runs in a fresh
+ * temp cwd; `.fixture('$FIXTURES/<project>/')` spreads a committed project
  * tree into it, `.env()` isolates the child environment.
  *
  * Docker-aware mode is opt-in via the `docker` option. The contract
@@ -31,7 +31,7 @@ import { afterAll } from 'vitest';
  * by scan, and a block comment between them hides the keys a document
  * is allowed to name.
  */
-const SPWN_BIN = resolve(import.meta.dirname, '../../../bin/spwn');
+const SPWN_BIN = resolve(import.meta.dirname, '../../../.artifacts/go/spwn');
 
 /*
  * Blanket-disable live credential validation in the test process so child

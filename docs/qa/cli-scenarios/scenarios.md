@@ -13,11 +13,11 @@ outcome (exit code, file existence, substring in output).
 
 ```bash
 # Prereqs
-make -C /path/to/spwn/spwn build               # produces bin/spwn
+make -C /path/to/spwn/spwn build               # produces .artifacts/go/spwn
 make -C /path/to/spwn/spwn build-test-image    # produces spwn-test:latest
 
 # Point harness at the binary (defaults to the path used on this machine)
-SPWN=/path/to/spwn/spwn/bin/spwn \
+SPWN=/path/to/spwn/spwn/.artifacts/go/spwn \
   bash ./harness.sh            # run all 50
 bash ./harness.sh 1 15         # subset
 bash ./harness.sh 31 40        # Docker ones
@@ -563,7 +563,7 @@ Both shipped in commit `da978c1c`.
 ```bash
 cd /path/to/spwn/spwn
 git pull
-make build                                   # rebuild bin/spwn
+make build                                   # rebuild .artifacts/go/spwn
 make build-test-image                        # rebuild spwn-test:latest
 bash ./harness.sh
 # Expect: "RESULTS: 98 passed, 0 failed"
