@@ -186,16 +186,10 @@ document before committing it**: a value the framework could not
 recognise as volatile (a temp path it did not substitute, a random agent
 name, a clock) comes back as a literal and has to be tokenised by hand.
 
-Two hazards worth knowing:
-
-- `@jterrazz/test` 13.0.1 writes the block-scalar indentation indicator
-  as `|2` where this suite's four-space documents need `|4`, for any
-  stream whose first line starts with a space — which is every spwn
-  banner. A freshly regenerated document then fails on its next run with
-  two surplus leading spaces. Correct the indicator by hand.
-- `files:` in a multi-run document is evaluated once the SESSION has
-  finished, not after the run it is attached to. "Absent after the first
-  command, present after the second" needs two results in code.
+One hazard worth knowing: `files:` in a multi-run document is evaluated
+once the SESSION has finished, not after the run it is attached to.
+"Absent after the first command, present after the second" needs two
+results in code — see `logs/events.test.ts`.
 
 #### The chain — `<aspect>.test.ts`
 
@@ -299,8 +293,9 @@ under [the chain](#the-chain--aspecttestts).
 2. State the ground (`fixture:`, `env:`), then `runs:` with a `command:`
    and a guessed `exit:` per step, plus any `files:` assertion.
 3. `TEST_UPDATE=1 pnpm -C tests exec vitest run <path>` fills in the exit
-   codes and the streams. **Read the result**, tokenise anything volatile
-   the framework left literal, and fix the block-scalar indicator to `|4`.
+   codes and the streams. **Read the result** and tokenise anything
+   volatile the framework left literal — a temp path it did not
+   substitute, a random agent name, a clock.
 4. Run it again without the flag. It must pass twice in a row.
 
 For a chain instead:

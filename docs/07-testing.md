@@ -26,7 +26,7 @@ Most CLI E2E specs are **documents**: a `<case>.spec.yaml` beside its siblings, 
 
 The rest are **chains**, `<aspect>.test.ts`, for what the format cannot state: a container read back with `.container(name)`, JSON judged by shape, an ABSENCE (`files:` says what a file contains, never what it does not), a count, two runs compared to each other, a host shell-out, output that varies with the operator's machine, a long-running process. Every chain file opens with the reason it is one; when only a single assertion needs code, the session still lives in a document and `cli.run('<case>.spec.yaml')` asserts it whole.
 
-Both forms bind to the same runner, `tests/specs/cli/cli.specification.ts`. The full grammar, the `TEST_UPDATE=1` workflow and its two hazards are in [`../tests/README.md`](../tests/README.md#typescript-e2e-setup-testsspecscli).
+Both forms bind to the same runner, `tests/specs/cli/cli.specification.ts`. The full grammar and the `TEST_UPDATE=1` workflow are in [`../tests/README.md`](../tests/README.md#typescript-e2e-setup-testsspecscli).
 
 ## Running the suites
 

@@ -467,7 +467,7 @@ runs:
 
 Every run is asserted, and a non-zero exit does not end the session — which is what `.exec([...])` never could, since it stops at the first failure and keeps only the last output. `files:` adds on-disk assertions in four forms (`contains`, `equals`, `exists`, `absent`), token-aware like the streams. `vitest.config.ts` collects the glob through the `literate()` plugin, so a failing scenario opens in the document itself, under its `description:`.
 
-Regenerate a document's `exit`, `stdout` and `stderr` — and nothing else — with `TEST_UPDATE=1`; the full workflow, including the two hazards to know before committing a regenerated document, is in [README.md](README.md#the-document--casespecyaml).
+Regenerate a document's `exit`, `stdout` and `stderr` — and nothing else — with `TEST_UPDATE=1`; the full workflow, including what to read before committing a regenerated document, is in [README.md](README.md#the-document--casespecyaml).
 
 **The chain** — `<aspect>.test.ts`, for what the format cannot state: containers, structural JSON, an absence, a count, two runs compared to each other, a host shell-out, host-dependent output, a long-running process. Each such file opens with the reason in its docblock. When only one ASSERTION needs code, the session still belongs in a document and `cli.run('<case>.spec.yaml')` runs it whole:
 
@@ -656,7 +656,7 @@ These scripts are protocol contracts. If the real Codex CLI changes its resume s
 
 1. Pick a folder: `tests/specs/cli/<domain>/`.
 2. Write a document, `<case>.spec.yaml`: the ground (`fixture:`, `env:`), the `runs:`, and any `files:` assertion.
-3. `TEST_UPDATE=1 pnpm -C tests exec vitest run <path>` fills in the exit codes and the streams; read the result, tokenise what stayed literal, fix the block indicator to `|4`, and run it again clean.
+3. `TEST_UPDATE=1 pnpm -C tests exec vitest run <path>` fills in the exit codes and the streams; read the result, tokenise what stayed literal, and run it again clean.
 4. Reach for a chain (`<aspect>.test.ts`) only for what the format cannot state — containers, structural JSON, an absence, a count, two runs compared, a host shell-out. Open the file with the reason, use `await using` if any container might spawn, and put the session in a document called through `cli.run()` when only one assertion needs code.
 5. Add the command to `tests/_contracts/cli-commands.yaml`.
 
