@@ -1,6 +1,5 @@
 # Build output
 .artifacts/
-dist/
 e2e.test
 .next/
 out/
