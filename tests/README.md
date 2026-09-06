@@ -34,11 +34,13 @@ These tests use the build tag `//go:build e2e` and are excluded from `make test`
 
 ### 3. TypeScript E2E Tests
 
-Behavioral specs that exercise the compiled `spwn` CLI binary end-to-end. Located in `tests/cli/`. They spawn processes, interact with Docker, and assert on CLI output.
+Behavioral specs that exercise the compiled `spwn` CLI binary end-to-end. Located in `tests/specs/cli/<domain>/`. They spawn processes, interact with Docker, and assert on CLI output.
+
+Most of them are **documents** — a `<case>.spec.yaml` stating one terminal session — and the rest are chains in `<aspect>.test.ts`. Which is which, and why, is [TypeScript E2E Setup](#typescript-e2e-setup-testsspecscli) below.
 
 ```bash
-cd tests && npx vitest           # run all TS E2E tests
-cd tests && npx vitest run       # run once (no watch)
+pnpm -C tests test               # run all TS E2E specs once
+pnpm -C tests test:watch         # watch mode
 cd tests && npx tsc --noEmit     # type-check only
 ```
 
@@ -104,91 +106,170 @@ Key design points:
 - `SpawnBuilder.Execute()` returns an `AssertionChain` for fluent assertions.
 - `WaitFor(t, timeout, interval, desc, conditionFn)` polls a condition instead of using `time.Sleep`.
 
-### TypeScript E2E Setup (`tests/_setup/`)
+### TypeScript E2E Setup (`tests/specs/cli/`)
 
-All TypeScript E2E tests run under `@jterrazz/test` via one
+All TypeScript E2E specs run under `@jterrazz/test` against one
 specification runner:
 
-| File                   | Purpose                                               |
-| ---------------------- | ----------------------------------------------------- |
-| `cli.specification.ts` | Exports `spec`, the single runner bound to `bin/spwn` |
+| File                             | Purpose                                                                                    |
+| -------------------------------- | ------------------------------------------------------------------------------------------ |
+| `specs/cli/cli.specification.ts` | Exports `cli`, the single runner bound to `bin/spwn`, docker-aware, with an `env` registry |
 
-One runner, one mental model. Whether a test happens to touch
-Docker is a property of what it asserts on, not a choice you make
-at setup time. CLI-only tests use `.exec(...)` and reach for
-stdout/stderr/file accessors. Tests that need container assertions
-add `await using` and call `.container(name)` - the first access
-lazily queries Docker; CLI-only tests never touch it.
+One runner, one mental model. Whether a spec happens to touch Docker is
+a property of what it asserts on, not a choice made at setup time.
+CLI-only specs reach for stdout/stderr/file accessors; specs that need
+container assertions add `await using` and call `.container(name)` — the
+first access lazily queries Docker, and a spec that never touches it
+pays nothing.
 
-The runner ships with a `transform` that strips ANSI and collapses
-`/tmp/spec-*` paths to `<PROJECT>`, plus seed handlers for
-`spwn.yaml/`, `agent/`, `state/`, and `activity/` fragments under
-each test's `seeds/` directory.
+There are two ways to write a spec, and the first is the default.
 
-**CLI-only pattern** - no containers, no docker cost:
+#### The document — `<case>.spec.yaml`
+
+A terminal session is already a specification: a command, its exit code,
+what it printed, what it left on disk. Most of this suite says exactly
+that, in a YAML document that lives **beside** the spec it belongs to
+(never under `expected/`, which holds goldens, not scenarios):
+
+```yaml
+description: a valid project prints a clean success report
+fixture: $FIXTURES/single-agent/
+env: isolated
+runs:
+    - command: check
+      exit: 0
+      stdout: |4+
+          
+            ✓  Project is valid
+               {{workdir}}/spwn.yaml
+
+      files:
+          spwn.yaml: { contains: 'name: demo' }
+```
+
+- `fixture:` is `.fixture()`: `$FIXTURES/<name>/` for the shared pool at
+  `specs/fixtures/`, a bare name for a feature-local `fixtures/` overlay,
+  a **list** to layer them in order.
+- `env:` names an environment set registered in
+  `cli.specification.ts` — today only `isolated`, which moves
+  `SPWN_HOME` onto the spec's temp cwd. Inline `KEY=value` also works.
+- `runs:` is the session. Every run is asserted, and a non-zero exit does
+  **not** end it — which is what `.exec([...])` could never do, since it
+  stops at the first failure and keeps only the last output.
+- `stdout:`/`stderr:` are byte-exact. `|` keeps the final newline, `|-`
+  drops it. Absent asserts an EMPTY stream.
+- `files:` asserts what the run left behind, in four forms: `contains`
+  (one needle or a list), `equals`, `exists`, `absent`.
+- The whole [token vocabulary](https://github.com/jterrazz/package-test/blob/main/docs/06-tokens.md)
+  works in the streams and in `files:` texts — `{{workdir}}`, `{{path}}`,
+  `{{time}}`, `{{iso8601}}`, `{{hex}}`, and `{{string#ref}}` for a value
+  that must be the same wherever it reappears.
+
+The runner reports the document's own path as the test file and its
+`description:` as the title, so a failing scenario opens where it is
+written. `vitest.config.ts` wires the glob through the `literate()`
+plugin; the shape of a document is checked by the conventions checker in
+`pnpm -C tests lint`, which also has a `--fix` for key order and block
+scalars.
+
+**Regenerate a document's streams** with `TEST_UPDATE=1`:
+
+```bash
+TEST_UPDATE=1 pnpm -C tests exec vitest run specs/cli/check
+```
+
+It rewrites `exit`, `stdout` and `stderr` per run — and nothing else.
+The ground, the commands and the `files:` assertions are never touched,
+and a token already in place survives by pattern match, so `{{workdir}}`
+stays `{{workdir}}` wherever the line moved to. **Read every regenerated
+document before committing it**: a value the framework could not
+recognise as volatile (a temp path it did not substitute, a random agent
+name, a clock) comes back as a literal and has to be tokenised by hand.
+
+Two hazards worth knowing:
+
+- `@jterrazz/test` 13.0.1 writes the block-scalar indentation indicator
+  as `|2` where this suite's four-space documents need `|4`, for any
+  stream whose first line starts with a space — which is every spwn
+  banner. A freshly regenerated document then fails on its next run with
+  two surplus leading spaces. Correct the indicator by hand.
+- `files:` in a multi-run document is evaluated once the SESSION has
+  finished, not after the run it is attached to. "Absent after the first
+  command, present after the second" needs two results in code.
+
+#### The chain — `<aspect>.test.ts`
+
+Reach for code when the format cannot state what the spec is about. Each
+file that does says so in its own header; the reasons in this suite are:
+
+| Reason                     | Example                                                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **containers**             | `world/`, `colony/`, `architect/`, `hooks/` — `.container(name)`, `await using`                                          |
+| **structural JSON**        | `check/json-report.test.ts`, `agent/agent-list.test.ts` — `result.json` by shape                                         |
+| **an absence**             | `dependency/scoped-refs.test.ts` — no entry may survive bare; `files:` says what a file contains, never what it does not |
+| **a count**                | the same file — exactly one list entry after a repeated install                                                          |
+| **two runs compared**      | `agent/agent-list.test.ts` — the same header from two separate invocations                                               |
+| **a host shell-out**       | `agent/export.test.ts` (`tar tzf`), `build/build.test.ts` (`docker run`)                                                 |
+| **host-dependent output**  | `auth/auth.test.ts` — the dashboard reads the operator's keychain                                                        |
+| **a long-running process** | `web/web.test.ts` — `.exec(…, { waitFor })` plus a `pgrep` orphan check                                                  |
+
+When only ONE assertion needs code, the session still belongs in a
+document: `cli.run('<case>.spec.yaml')` runs it — its ground, its
+servers, every run asserted — and resolves with the last run's result,
+so the code adds only what it must:
 
 ```typescript
-import { describe, expect, test } from 'vitest';
-import { spec } from '../../../_setup/cli.specification.js';
+test('no manifest entry survives without an explicit scheme', async () => {
+    // Given - init followed by three installs mixing bare, local and catalog refs
+    const result = await cli.run('explicit-manifest-schemes.spec.yaml');
 
-describe('spwn check', () => {
-    test('valid project prints a clean success report', async () => {
-        const result = await spec('check valid').project('single-agent').exec('check').run();
-
-        expect(result.exitCode).toBe(0);
-        await result.stdout.toMatch('valid-project.txt');
-    });
+    // Then - every entry on disk carries its scheme
+    const bare = bareEntries(result.file('spwn/agents/neo/agent.yaml').content);
+    expect(bare, `manifest carries bare entries: ${bare?.join(', ')}`).toBeNull();
 });
 ```
 
-- `.project('name')` copies `tests/_fixtures/<name>/` into a fresh
-  temp dir before the command runs.
-- `result.stdout.toMatch('name.txt')` compares against
-  `<test-dir>/expected/stdout/name.txt`. Regenerate with
-  `JTERRAZZ_TEST_UPDATE=1 pnpm -C tests exec vitest run ...`.
-- `result.json.toMatch('name.json')` parses stdout and deep-equals
-  against a JSON fixture - pair with `spwn check --json` etc.
-- `result.file('.spwn/state.json').exists` / `.content` reads the
-  host-side working dir.
-
-**Container-asserting pattern** - same `spec`, plus `.container(...)`:
+**Container-asserting pattern** — the same `cli`, plus `.container(...)`:
 
 ```typescript
-import { describe, expect, test } from 'vitest';
-import { spec } from '../../../_setup/cli.specification.js';
+import { expect, test } from 'vitest';
 
-describe('world lifecycle', () => {
-    test('up provisions a running world', async () => {
-        await using result = await spec('up lifecycle').project('docker-pilot').exec('up').run();
+import { cli } from '../cli.specification.js';
 
-        expect(result.exitCode).toBe(0);
-        result.stderr.toContain('Created container');
+test('up provisions a running world', async () => {
+    // Given - the docker-pilot world brought online
+    await using result = await cli.fixture('$FIXTURES/docker-pilot/').exec('up');
 
-        const neo = result.container('neo');
-        expect(neo.running).toBe(true);
-        expect(neo.file('/agents/neo/CLAUDE.md').exists).toBe(true);
-    });
+    // Then - the container is live with its agent home laid down
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toContain('Created container');
+
+    const neo = result.container('neo');
+    expect(neo.running).toBe(true);
+    expect(neo.file('/agents/neo/CLAUDE.md').exists).toBe(true);
 });
 ```
 
-- **`await using`** whenever a test might spawn containers. The
-  dispose hook force-removes every container tagged with this
-  test's run id so parallel runs never collide. Harmless no-op
-  for tests that don't spawn anything.
+- **`await using`** whenever a spec might spawn containers. The dispose
+  hook force-removes every container tagged with this run's id so
+  parallel runs never collide. Harmless no-op for specs that spawn
+  nothing — and required by rule B5 on a docker-aware runner. A document
+  needs none of this, which is the other reason a container spec stays a
+  chain.
 - `result.container('<world-key>')` resolves by the
-  `sh.spwn.world.config` label - the key declared under `worlds.`
-  in `spwn.yaml`, not the sometimes-empty `sh.spwn.world.name`.
-- `result.container(name).file(path)` / `.exec(cmd)` /
-  `.inspect.value` / `.stdout` / `.stderr` use the same accessor
-  API as the host-side `result` - no new vocabulary.
+  `sh.spwn.world.config` label — the key declared under `worlds.` in
+  `spwn.yaml`, not the sometimes-empty `sh.spwn.world.name`.
+- `result.container(name).file(path)` / `.exec(cmd)` / `.inspect.value` /
+  `.stdout` / `.stderr` use the same accessor API as the host-side
+  `result` — no new vocabulary.
 - Follow-up CLI commands that need a container id (e.g.
-  `spwn world inspect <id>`) get it via `neo.id`.
+  `spwn world inspect <id>`) get it via the world-id label.
 - Always use the `docker-pilot` fixture (minimal agent without
-  `spwn:python`). `single-agent` fails to spawn because the
-  base image lacks `pip3`.
+  `spwn:python`). `single-agent` fails to spawn because the base image
+  lacks `pip3`.
 - Banners (`Created container`, `Agent is alive`, `Destroyed`,
-  `World destroyed`) go to **stderr**, not stdout - spwn follows
-  the Unix convention of data-on-stdout / status-on-stderr.
+  `World destroyed`) go to **stderr**, not stdout — spwn follows the Unix
+  convention of data-on-stdout / status-on-stderr.
 
 ## Adding New Tests
 
@@ -209,40 +290,61 @@ describe('world lifecycle', () => {
 
 ### TypeScript E2E Test
 
-1. Create `tests/cli/<area>/<feature>/<feature>.e2e.test.ts` (one
-   per-feature folder per test file, siblings: `expected/`, `seeds/`).
-2. Import `spec` from `tests/_setup/cli.specification.js`.
-3. Use `describe`/`test` with clear behavioral names.
-4. Prefer structured assertions: `.toMatch('file.txt')`,
-   `.json.toMatch('file.json')`, `.container(name).file(path)`,
-   `.container(name).exec(cmd)`. Reach for `.toContain(substring)`
-   when the intent is "some substring appears somewhere".
-5. For Docker tests, always use `await using` to get automatic
-   container cleanup.
-6. Run with `pnpm -C tests exec vitest run --project {cli|docker} <glob>`.
+Write a **document** unless the spec needs one of the reasons listed
+under [the chain](#the-chain--aspecttestts).
+
+1. Create `tests/specs/cli/<domain>/<case>.spec.yaml` — `<case>` in
+   kebab-case, naming the scenario, never the bare folder name and never
+   carrying the words `test`, `spec` or `cli` the suffix already does.
+2. State the ground (`fixture:`, `env:`), then `runs:` with a `command:`
+   and a guessed `exit:` per step, plus any `files:` assertion.
+3. `TEST_UPDATE=1 pnpm -C tests exec vitest run <path>` fills in the exit
+   codes and the streams. **Read the result**, tokenise anything volatile
+   the framework left literal, and fix the block-scalar indicator to `|4`.
+4. Run it again without the flag. It must pass twice in a row.
+
+For a chain instead:
+
+1. Create `tests/specs/cli/<domain>/<aspect>.test.ts` and open its
+   docblock with the reason the format cannot carry it.
+2. Import `cli` from `../cli.specification.js`.
+3. If only one ASSERTION needs code, put the session in a document and
+   call `cli.run('<case>.spec.yaml')`.
+4. Use `// Given -` and `// Then -` narration, in that order.
+5. For Docker specs, always `await using` (rule B5).
+6. Run with `pnpm -C tests exec vitest run <glob>`.
 
 ## Test File Naming Conventions
 
-| Layer   | Pattern                                    | Example             |
-| ------- | ------------------------------------------ | ------------------- |
-| Go unit | `*_test.go` (next to source)               | `manifest_test.go`  |
-| Go E2E  | `*_test.go` (in `tests/e2e/`)              | `spawn_test.go`     |
-| TS E2E  | `*.e2e.test.ts` (in `tests/cli/{domain}/`) | `spawn.e2e.test.ts` |
+| Layer       | Pattern                                       | Example                   |
+| ----------- | --------------------------------------------- | ------------------------- |
+| Go unit     | `*_test.go` (next to source)                  | `manifest_test.go`        |
+| Go E2E      | `*_test.go` (in `tests/e2e/`)                 | `spawn_test.go`           |
+| TS document | `<case>.spec.yaml` (in `specs/cli/<domain>/`) | `valid-project.spec.yaml` |
+| TS chain    | `<aspect>.test.ts` (in `specs/cli/<domain>/`) | `json-report.test.ts`     |
 
 ## Test Function Naming
 
 - **Go**: `TestFeature_Scenario` (e.g., `TestSpawn_CreatesRunningContainer`)
-- **TypeScript**: `describe("feature")` + `test("scenario description")` (e.g., `describe("world spawn")` + `test("creates a running Docker container")`)
+- **TypeScript document**: the `description:` line IS the vitest title —
+  one lowercase line, no trailing period, unique within its folder.
+- **TypeScript chain**: `test("scenario description")`, same rules.
 
 ## Vitest Configuration
 
-Tests use `tests/vitest.config.ts` with two projects:
+`tests/vitest.config.ts` is one project over `specs/cli/**` and
+`specs/lint/**`, with the `literate()` plugin adding
+`specs/cli/**/*.spec.yaml` to the include and binding every document to
+`specs/cli/cli.specification.ts`.
 
-- **`cli`** - CLI-mode tests. Parallel within the project, per-test
-  `testTimeout: 120_000`, `hookTimeout: 60_000`.
-- **`docker`** - Docker-mode tests. Also `testTimeout: 120_000` and
-  `hookTimeout: 60_000`, but `fileParallelism: false` because Docker
-  tests within a single file must run sequentially. Cross-file
-  isolation is still handled by the framework's label-based test-run
-  id, so the docker project is safe to parallelize if you ever drop
-  `fileParallelism: false`.
+- `testTimeout: 120_000` — the docker-aware specs spawn real containers;
+  CLI-only specs finish in milliseconds, so the upper bound is harmless.
+- `hookTimeout: 180_000` — setup hooks and the first container boot are
+  slow on cold CI runners.
+- `fileParallelism: true` — spwn scopes every world lookup by the
+  `SPWN_TEST_LABEL` the framework injects per spec, and the framework
+  force-removes each run's containers by that label at scope exit, so
+  two parallel specs both spawning a "neo" world route to their own
+  container.
+- The real-build smoke spec runs separately, via
+  `vitest.smoke.config.ts` (`make test-smoke`).

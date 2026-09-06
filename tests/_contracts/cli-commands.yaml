@@ -1,9 +1,17 @@
 generatedDocsDir: docs/cli
 requiredBehaviorSpecs:
     - command: spwn init
-      tests: [tests/specs/cli/init/init.test.ts]
+      tests:
+          [
+              tests/specs/cli/init/starter-scaffold.spec.yaml,
+              tests/specs/cli/init/scaffold-shape.test.ts,
+          ]
     - command: spwn check
-      tests: [tests/specs/cli/check/check.test.ts]
+      tests:
+          [
+              tests/specs/cli/check/valid-project.spec.yaml,
+              tests/specs/cli/check/json-report.test.ts,
+          ]
     - command: spwn build
       tests:
           [tests/specs/cli/build/build.test.ts, tests/specs/cli/build/tree-only.test.ts]
@@ -18,6 +26,10 @@ requiredBehaviorSpecs:
     - command: spwn skill
       tests: [tests/specs/cli/skill/skills.test.ts]
     - command: spwn install
-      tests: [tests/specs/cli/dependency/install.test.ts]
+      tests:
+          [
+              tests/specs/cli/dependency/catalog-pin.spec.yaml,
+              tests/specs/cli/dependency/scoped-refs.test.ts,
+          ]
     - command: spwn auth
       tests: [tests/specs/cli/auth/auth.test.ts]

@@ -46,7 +46,7 @@ For **how to run** tests, see [README.md](README.md). For the original design ra
 ├──────────────────────────────────────────────────────────────────┤
 │ L4  Docker E2E                                                   │
 │     L4a Go: packages/world/tests/e2e (//go:build e2e)            │
-│     L4b TS: tests/cli/<noun>/<verb>/*.e2e.test.ts (compiled bin) │
+│     L4b TS: tests/specs/cli/<domain>/ (compiled bin)             │
 │     ⏱  ~30s–2m  📦  Real Docker + spwn-test:latest               │
 │     ▶  make test-go-e2e, make test-compile-e2e, make test-cli        │
 ├──────────────────────────────────────────────────────────────────┤
@@ -126,22 +126,23 @@ spwn/
 │       └── builder_from_base_test.go   ← L2 cache-invariants
 │
 ├── tests/                         ← TypeScript E2E + Web E2E + governance
-│   ├── README.md                  ← How to run
+│   ├── README.md                  ← How to run, and how to write a spec
 │   ├── ARCHITECTURE.md            ← This file
 │   │
-│   ├── cli/                       ← L4b CLI E2E (one folder per verb)
-│   │   ├── agent/
-│   │   │   ├── talk/
-│   │   │   │   ├── talk.e2e.test.ts
-│   │   │   │   ├── seeds/         ← Files copied into the temp project
-│   │   │   │   └── expected/
-│   │   │   │       ├── stdout/
-│   │   │   │       └── json/
-│   │   │   ├── new/, fork/, dream/, sleep/
-│   │   ├── world/
-│   │   │   ├── up/, down/, inspect/, snap/, …
-│   │   ├── build/, check/, init/, auth/, gate/, skill/, logs/, …
-│   │   └── regressions/
+│   ├── specs/                     ← L4b CLI E2E, one folder per domain
+│   │   ├── cli/
+│   │   │   ├── cli.specification.ts   ← The single runner (`cli`), docker-aware
+│   │   │   ├── check/
+│   │   │   │   ├── valid-project.spec.yaml   ← A document: one session, asserted whole
+│   │   │   │   ├── json-report.test.ts       ← A chain: structural JSON
+│   │   │   │   ├── manifest-grammar.test.ts  ← A chain: absences, bridged on documents
+│   │   │   │   ├── fixtures/                 ← Feature-local overlays
+│   │   │   │   └── expected/                 ← Only what a document cannot carry
+│   │   │   └── agent/, world/, init/, build/, dependency/, logs/, …
+│   │   ├── fixtures/              ← Shared pool, reached via `$FIXTURES/<name>/`
+│   │   │   └── docker-pilot/, codex-pilot/, single-agent/, empty/, …
+│   │   └── lint/
+│   │       └── guards/            ← Repo-wide source guards (plain vitest, no runner)
 │   │
 │   ├── web/                       ← L5 Playwright (one folder per feature)
 │   │   ├── playwright.config.ts
@@ -150,21 +151,7 @@ spwn/
 │   │   │   └── global-teardown.ts ← Container cleanup by label
 │   │   ├── _fixtures/
 │   │   │   └── app.ts             ← Playwright `test` extended with api + app helpers
-│   │   ├── agents/
-│   │   │   ├── list/list.spec.ts
-│   │   │   └── detail/detail.spec.ts
-│   │   ├── examples/
-│   │   │   └── gallery/gallery.spec.ts
-│   │   ├── navigation/
-│   │   │   ├── sidebar/sidebar.spec.ts
-│   │   │   ├── command-palette/command-palette.spec.ts
-│   │   │   └── header/header.spec.ts
-│   │   ├── system/
-│   │   │   └── api-health/api-health.spec.ts
-│   │   └── worlds/
-│   │       ├── list/list.spec.ts
-│   │       ├── detail/detail.spec.ts
-│   │       └── lifecycle/lifecycle.spec.ts
+│   │   ├── agents/, examples/, navigation/, system/, worlds/
 │   │
 │   ├── _contracts/                ← L0 governance (the registry)
 │   │   ├── api-routes.yaml
@@ -180,22 +167,13 @@ spwn/
 │   │   ├── claude/mock.sh         ← `claude` simulator inside test image
 │   │   └── codex/mock.sh          ← `codex` simulator
 │   │
-│   ├── _setup/
-│   │   └── cli.specification.ts   ← The single CLI E2E runner (`spec`)
-│   │
-│   ├── _fixtures/                 ← Project skeletons used by `spec` runner
-│   │   ├── docker-pilot/
-│   │   ├── codex-pilot/
-│   │   ├── single-agent/
-│   │   └── testdata/              ← Shared fixtures consumed by Go E2E too
+│   ├── _fixtures/                 ← Shared seed dirs the GO E2E suite reads
+│   │   └── testdata/              ← Looked up by setup.TestdataDir()
 │   │
 │   ├── _smoke/                    ← Real-build cross-cutting smoke tests
-│   │   ├── init-up/
-│   │   └── upgrade/
-│   │
 │   ├── _catalog/                  ← Catalog-bundle goldens (Go module)
 │   │
-│   ├── vitest.config.ts           ← cli + docker projects
+│   ├── vitest.config.ts           ← One project + the literate() plugin
 │   ├── vitest.smoke.config.ts
 │   ├── package.json, tsconfig.json
 │   ├── oxfmt.config.ts, oxlint.config.ts
@@ -208,10 +186,10 @@ spwn/
 
 ### Why this shape
 
-- **CLI tree** mirrors the CLI's noun-verb grammar: `tests/cli/agent/talk/talk.e2e.test.ts` reads like the command `spwn agent talk`. The folder holds the spec plus its `seeds/` (project skeleton copied into the temp dir) and `expected/` (stdout/JSON fixtures).
+- **CLI tree** is one folder per DOMAIN of the CLI (`specs/cli/agent/`, `specs/cli/world/`, `specs/cli/check/`), and inside it one file per scenario: `specs/cli/agent/forked-agent.spec.yaml` reads like the session it describes. The folder holds its scenarios, the chains that need code, and — only where those chains need them — a `fixtures/` overlay and an `expected/` golden.
 - **Web tree** mirrors web's UI grouping: `tests/web/<domain>/<feature>/<feature>.spec.ts` reads like the surface ("worlds/list", "agents/detail", "navigation/sidebar"). One feature = one folder = one spec file.
 - **No false symmetry.** CLI features (`build`, `check`, `auth`, `gate`) often have no web counterpart, and vice versa. The trees don't pretend otherwise; the contract registry (`_contracts/`) is what ties them together when an underlying surface has both.
-- **Underscore-prefixed infrastructure.** `_contracts/`, `_simulators/`, `_setup/`, `_fixtures/`, `_smoke/`, `_catalog/` sort above feature folders alphabetically and are visually distinct so no one mistakes them for a domain.
+- **Underscore-prefixed infrastructure.** `_contracts/`, `_simulators/`, `_fixtures/`, `_smoke/`, `_catalog/` sort above feature folders alphabetically and are visually distinct so no one mistakes them for a domain. The CLI runner and the fixture pool its specs reach for are not among them: they live inside `specs/cli/`, where the framework's own layout rule puts them — `_fixtures/` now holds only the seed dirs the GO E2E suite reads.
 
 ---
 
@@ -362,9 +340,9 @@ packages/runtimes/testdata/minimal-single-agent/
 
 Regenerate goldens with `JTERRAZZ_TEST_UPDATE=1 go test ./packages/runtimes/...`.
 
-### CLI fixture tests: `tests/cli/<area>/<feature>/expected/`
+### CLI goldens: the document's own streams
 
-The `spec` runner (see L4b) compares stdout/stderr/JSON output against fixture files under `expected/stdout/<name>.txt` and `expected/json/<name>.json`. Same regenerate flag.
+Most CLI output is goldened INSIDE the spec document that produced it — `stdout:` and `stderr:` are byte-exact block scalars in the `<case>.spec.yaml`, regenerated with `TEST_UPDATE=1` (see L4b). A sibling `expected/` survives only for the assertions a document cannot carry: `expected/<name>.json` for the structural `result.json` comparisons under `check/`, `agent/` and `world/`.
 
 ### Compile cache invariants: `packages/compile/builder_from_base_test.go`
 
@@ -455,36 +433,54 @@ func TestSpawn_CreatesRunningContainer(t *testing.T) {
 
 The simulator inside `spwn-test:latest` writes its observations as JSON to `/tmp/claude-mock.json` so `MockAssertion` can read it back: `m.SawMind()`, `m.SawClaudeMD()`, `m.SawSkill("focus")`. The shared seed dirs live at `tests/_fixtures/testdata/<case>/` and are looked up by `setup.TestdataDir()`.
 
-### L4b · TypeScript: `tests/cli/<noun>/<verb>/<verb>.e2e.test.ts`
+### L4b · TypeScript: `tests/specs/cli/<domain>/`
 
-Exercise the compiled `bin/spwn` from a user's perspective via one runner: `tests/_setup/cli.specification.ts` (`spec`).
+Exercise the compiled `bin/spwn` from a user's perspective through one runner, `tests/specs/cli/cli.specification.ts` (`cli`), which is docker-aware and carries the `env` registry a document names by bare word.
 
-**Folder layout per feature:**
+A spec is written in one of two forms, and the first is the default.
+
+**The document** — `<case>.spec.yaml`, beside the specs it belongs to. One scenario per file: the ground it stands on, the session, and what the session left on disk.
+
+```yaml
+description: an incomplete lockfile is flagged by name
+fixture: $FIXTURES/docker-pilot/
+runs:
+    - command: install spwn:unix
+      exit: 0
+      stdout: |4
+            ✓  installed spwn:unix
+               1 agent updated, spwn.lock pinned
+    - command: check
+      exit: 1
+      stdout: |4+
+          
+            {{workdir}}/spwn.yaml
+
+            errors
+              •  "spwn:git" is not recorded in spwn.lock
+                 spwn.yaml#deps
+                 → run `spwn install spwn:git` to sync the lockfile
+
+            1 error(s), 0 warning(s), 0 info
 
 ```
-tests/cli/build/build/
-├── build.e2e.test.ts
-├── seeds/                ← Files copied into the temp project (spwn.yaml, agents/, …)
-└── expected/
-    ├── stdout/
-    │   └── valid-build.txt
-    └── json/
-        └── invalid-tool.json
-```
 
-**CLI-only pattern** (no containers):
+Every run is asserted, and a non-zero exit does not end the session — which is what `.exec([...])` never could, since it stops at the first failure and keeps only the last output. `files:` adds on-disk assertions in four forms (`contains`, `equals`, `exists`, `absent`), token-aware like the streams. `vitest.config.ts` collects the glob through the `literate()` plugin, so a failing scenario opens in the document itself, under its `description:`.
+
+Regenerate a document's `exit`, `stdout` and `stderr` — and nothing else — with `TEST_UPDATE=1`; the full workflow, including the two hazards to know before committing a regenerated document, is in [README.md](README.md#the-document--casespecyaml).
+
+**The chain** — `<aspect>.test.ts`, for what the format cannot state: containers, structural JSON, an absence, a count, two runs compared to each other, a host shell-out, host-dependent output, a long-running process. Each such file opens with the reason in its docblock. When only one ASSERTION needs code, the session still belongs in a document and `cli.run('<case>.spec.yaml')` runs it whole:
 
 ```ts
-import { describe, expect, test } from 'vitest';
-import { spec } from '../../../_setup/cli.specification.js';
+test('the exported archive carries every mind layer', async () => {
+    // Given - the create + export session, stated in the document
+    const result = await cli.run('exported-archive.spec.yaml');
 
-describe('spwn check', () => {
-    test('valid project prints a clean success report', async () => {
-        const result = await spec('check valid').project('single-agent').exec('check').run();
-
-        expect(result.exitCode).toBe(0);
-        await result.stdout.toMatch('valid-project.txt');
+    // Then - the tarball listing carries the Soul plus the two Mind layer dirs
+    const listing = execSync(`tar tzf ${join(result.filesystem.cwd, 'neo.tar.gz')}`, {
+        encoding: 'utf8',
     });
+    expect(listing).toContain('SOUL.md');
 });
 ```
 
@@ -492,10 +488,12 @@ describe('spwn check', () => {
 
 ```ts
 test('up provisions a running world', async () => {
-    await using result = await spec('up lifecycle').project('docker-pilot').exec('up').run();
+    // Given - the docker-pilot world brought online
+    await using result = await cli.fixture('$FIXTURES/docker-pilot/').exec('up');
 
+    // Then - the container is live with its agent home laid down
     expect(result.exitCode).toBe(0);
-    result.stderr.toContain('Created container');
+    expect(result.stderr).toContain('Created container');
 
     const neo = result.container('neo');
     expect(neo.running).toBe(true);
@@ -503,10 +501,9 @@ test('up provisions a running world', async () => {
 });
 ```
 
-- `await using` — the dispose hook force-removes every container tagged with this test's label so parallel runs never collide. Harmless no-op for CLI-only tests.
-- `result.container('neo').file(...)` / `.exec(...)` / `.inspect.value` — same accessor API as host-side `result`. No new vocabulary.
-- `JTERRAZZ_TEST_UPDATE=1` regenerates fixtures.
-- The `.project('name')` source lives at `tests/_fixtures/<name>/`; the runner is configured with `root: '../_fixtures'`.
+- `await using` — the dispose hook force-removes every container tagged with this run's id so parallel runs never collide. Required by rule B5 on a docker-aware runner, and a harmless no-op for a chain that spawns nothing. A document needs none of it, which is the other reason a container spec stays a chain.
+- `result.container('neo').file(...)` / `.exec(...)` / `.inspect.value` — same accessor API as the host-side `result`. No new vocabulary.
+- `.fixture('$FIXTURES/<name>/')` spreads a project from the shared pool at `specs/fixtures/`; a bare name resolves to the feature's own `fixtures/` overlay, and chained calls layer in order.
 
 ---
 
@@ -657,13 +654,11 @@ These scripts are protocol contracts. If the real Codex CLI changes its resume s
 
 ### Add a CLI E2E test
 
-1. Pick a folder: `tests/cli/<noun>/<verb>/`.
-2. Create `<verb>.e2e.test.ts`, plus `seeds/` (project skeleton) and `expected/` (fixtures).
-3. Import `spec` from `tests/_setup/cli.specification.js`.
-4. Use `await using` if any container might spawn.
-5. Prefer structured assertions: `result.stdout.toMatch('file.txt')`, `result.json.toMatch('file.json')`, `result.container('neo').file(path)`.
-6. Regenerate fixtures with `JTERRAZZ_TEST_UPDATE=1 pnpm -C tests exec vitest run <glob>`.
-7. Add the command to `tests/_contracts/cli-commands.yaml`.
+1. Pick a folder: `tests/specs/cli/<domain>/`.
+2. Write a document, `<case>.spec.yaml`: the ground (`fixture:`, `env:`), the `runs:`, and any `files:` assertion.
+3. `TEST_UPDATE=1 pnpm -C tests exec vitest run <path>` fills in the exit codes and the streams; read the result, tokenise what stayed literal, fix the block indicator to `|4`, and run it again clean.
+4. Reach for a chain (`<aspect>.test.ts`) only for what the format cannot state — containers, structural JSON, an absence, a count, two runs compared, a host shell-out. Open the file with the reason, use `await using` if any container might spawn, and put the session in a document called through `cli.run()` when only one assertion needs code.
+5. Add the command to `tests/_contracts/cli-commands.yaml`.
 
 ### Add a Web E2E test
 
@@ -692,7 +687,7 @@ These scripts are protocol contracts. If the real Codex CLI changes its resume s
 ### Add a CLI command
 
 1. Add the Cobra command under `apps/cli/<noun>/<verb>.go`.
-2. Add a behavior test under `tests/cli/<noun>/<verb>/<verb>.e2e.test.ts` with `expected/stdout/<verb>.txt`.
+2. Add a behaviour spec under `tests/specs/cli/<domain>/<case>.spec.yaml`, and its `--help` page under `tests/specs/cli/help/`.
 3. Add it to `tests/_contracts/cli-commands.yaml` (with `--help` snapshot path).
 4. Generated docs under `docs/cli/spwn_<noun>_<verb>.md` are checked into the repo.
 
@@ -738,11 +733,13 @@ These will fail CI or get caught in review:
 - **Layer** — A horizontal slice of the test pyramid (L0 governance, L1 unit, …, L6 real-runtime smoke).
 - **Surface** — Anything users or other systems depend on: an API route, a CLI command, a runtime adapter, a catalog entry, a web route. Every surface must declare its tests in `tests/_contracts/`.
 - **Contract** — A registry entry in `tests/_contracts/*.yaml` that names a surface and lists the proofs it requires.
-- **Golden** — A byte-level expected output committed to the repo. Regenerate with `JTERRAZZ_TEST_UPDATE=1`.
+- **Golden** — A byte-level expected output committed to the repo. For Go, regenerate with `JTERRAZZ_TEST_UPDATE=1`; for the CLI E2E documents, with `TEST_UPDATE=1`.
 - **Simulator** — An executable protocol contract for an external CLI (under `tests/_simulators/`). Not a loose mock — a contract test guards the protocol shape.
-- **`spec`** — The single CLI E2E runner exported from `tests/_setup/cli.specification.ts`.
+- **`cli`** — The single CLI E2E runner exported from `tests/specs/cli/cli.specification.ts`.
+- **Document** — A `<case>.spec.yaml` stating one terminal session: the ground, the `runs:`, the streams and `files:`. The default form for a CLI E2E spec.
+- **Chain** — A `<aspect>.test.ts` for what a document cannot state. Its docblock opens with the reason.
 - **Test label** — `SPWN_TEST_LABEL` (e.g. `web-e2e-<ts>-<rand>`) attached to every container created by a test run, so cleanup never affects unrelated containers.
-- **Underscore-prefixed folder** — Test infrastructure (`_contracts/`, `_simulators/`, `_setup/`, `_fixtures/`, `_smoke/`, `_catalog/`). Sorts above feature folders and signals "this is not a feature."
+- **Underscore-prefixed folder** — Test infrastructure (`_contracts/`, `_simulators/`, `_fixtures/`, `_smoke/`, `_catalog/`). Sorts above feature folders and signals "this is not a feature."
 
 ---
 
