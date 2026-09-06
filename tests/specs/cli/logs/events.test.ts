@@ -1,15 +1,23 @@
-import { text } from '@jterrazz/test';
 import { describe, expect, test } from 'vitest';
 
 import { cli } from '../cli.specification.js';
 
 /**
- * Activity event emissions — asserts CLI operations append well-formed entries
- * to `activity.jsonl`. Each spec uses an isolated `$WORKDIR/spwn-home` so its
- * log starts empty. The whole-event shape is pinned by a byte-for-byte golden
- * (ids are 24-hex → {{hex}}, timestamps → {{iso8601}}); the per-type specs
- * parse the JSON for targeted field probes. Every result binds with
- * `await using` (rule B5).
+ * Activity event emissions — the specs that read `activity.jsonl` as DATA
+ * rather than as text: one entry of a given type, a metadata field, ids
+ * compared to each other, timestamps compared to each other. A document's
+ * `files: { equals }` is byte-exact text and has no vocabulary for any of
+ * them; the whole-file shape it CAN carry is stated in
+ * `activity-log.spec.yaml` beside this file, with `{{hex}}` ids and
+ * `{{iso8601}}` timestamps.
+ *
+ * The lazy-creation spec stays here for a different reason: `files:` in a
+ * multi-run document is evaluated once the session has finished, so
+ * "absent after the first run, present after the second" needs two
+ * results, each with its own working directory.
+ *
+ * Each spec uses an isolated `$WORKDIR/spwn-home` so its log starts empty.
+ * Every result binds with `await using` (rule B5).
  */
 
 const isolated = () => cli.fixture('$FIXTURES/empty/').env({ SPWN_HOME: '$WORKDIR/spwn-home' });
@@ -167,18 +175,5 @@ describe('activity event emissions', () => {
         await using after = await isolated().exec('agent create neo');
         expect(after.exitCode).toBe(0);
         expect(after.file(ACTIVITY_PATH).exists).toBe(true);
-    });
-
-    test('activity.jsonl matches the whole-event golden', async () => {
-        // Given - a mix of create and fork operations
-        await using result = await isolated().exec([
-            'agent create neo',
-            'agent create morpheus',
-            'agent fork neo trinity',
-        ]);
-
-        // Then - the raw log matches byte-for-byte, ids and timestamps tokenized
-        expect(result.exitCode).toBe(0);
-        expect(text(result.file(ACTIVITY_PATH).content)).toMatch('activity.jsonl.txt');
     });
 });

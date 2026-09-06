@@ -1,0 +1,28 @@
+description: --type with an unknown event type lists the known ones
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: logs --type garbage
+      exit: 1
+      stderr: |4+
+          
+            Error: unknown event type "garbage"
+
+            Known types:
+              agent.created
+              agent.deleted
+              agent.dreamed
+              agent.forked
+              agent.joined
+              agent.left
+              agent.slept
+              agent.talked
+              architect.started
+              architect.stopped
+              architect.talked
+              world.destroyed
+              world.session_ended
+              world.snapshot
+              world.spawned
+              world.state_changed
+

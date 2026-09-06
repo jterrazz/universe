@@ -8,7 +8,8 @@ import { cli } from '../cli.specification.js';
  * over an async helper that binds its own `await using` per exec (rule B5). The
  * lock-held case is docker-aware: a stale per-world lockfile is layered in via
  * the `lock-held/` overlay, and `up` must refuse without ever creating a
- * container.
+ * container — an assertion on the CONTAINER accessor, which is why it stays a
+ * chain. The two sequential specs beside them are documents.
  */
 /*
  * Create one agent in a fresh isolated home, binding its own `await using` so
@@ -37,18 +38,6 @@ describe('cli stress tests', () => {
         }
     });
 
-    test('create + list round-trip surfaces the agent name in stderr banners', async () => {
-        // Given - init, create, then ls in one isolated chain
-        await using result = await cli
-            .fixture('$FIXTURES/empty/')
-            .env({ SPWN_HOME: '$WORKDIR/spwn-home' })
-            .exec(['init', 'agent create rapid', 'agent ls']);
-
-        // Then - the chain exits zero and the agent name appears in the ls table (rendered to stderr)
-        expect(result.exitCode).toBe(0);
-        expect(result.stderr).toContain('rapid');
-    });
-
     test('spwn up refuses to run when another up is holding the lock', async () => {
         // Given - a stale per-world lockfile already present under .spwn/ (a concurrent up that has not released)
         await using result = await cli
@@ -60,25 +49,5 @@ describe('cli stress tests', () => {
         expect(result.exitCode).toBe(1);
         expect(result.stderr).toContain('Up in progress');
         expect(result.container('neo').exists).toBe(false);
-    });
-
-    test('rapid sequential create/rm cycles do not corrupt state', async () => {
-        // Given - five create/rm pairs followed by agent ls in one isolated chain
-        const steps: string[] = ['init'];
-        for (let i = 0; i < 5; i += 1) {
-            steps.push(`agent create rapid-${i}`);
-            steps.push(`agent rm rapid-${i}`);
-        }
-        steps.push('agent ls');
-
-        await using result = await cli
-            .fixture('$FIXTURES/empty/')
-            .env({ SPWN_HOME: '$WORKDIR/spwn-home' })
-            .exec(steps);
-
-        // Then - the chain exits zero with no crash (scalpel: crash-signal absence)
-        expect(result.exitCode).toBe(0);
-        expect(result.stderr.text).not.toContain('panic:');
-        expect(result.stderr.text).not.toContain('goroutine ');
     });
 });
