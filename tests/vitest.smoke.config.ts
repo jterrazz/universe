@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { defineSpecConfig } from '@jterrazz/test/vitest';
 
 // Smoke tests: real-build end-to-end coverage for the default scaffold
 // And every shipped catalog example. These intentionally bypass
@@ -7,9 +7,13 @@ import { defineConfig } from 'vitest/config';
 // World" regressions before they reach users.
 //
 // Run with: pnpm test:smoke
-export default defineConfig({
+export default defineSpecConfig({
     test: {
-        exclude: ['**/node_modules/**', '**/dist/**', 'web/**'],
+        /*
+         * Additive on the preset's exclusions; only the playwright suite is
+         * left to state.
+         */
+        exclude: ['web/**'],
         // The framework-based real-build smoke lives under specs/ (it needs
         // $FIXTURES); the raw-execSync upgrade smoke stays under _smoke/.
         include: ['specs/cli/smoke/init-up.test.ts', '_smoke/**/*.e2e.test.ts'],

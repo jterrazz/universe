@@ -142,7 +142,7 @@ automatically via the background check / Tauri updater.
 
 ```bash
 goreleaser release --snapshot --clean
-# Artifacts land in ./dist/
+# Artifacts land in ./.artifacts/goreleaser/
 ```
 
 ### Tauri build (no upload)
@@ -150,7 +150,7 @@ goreleaser release --snapshot --clean
 ```bash
 cd apps/web
 pnpm tauri build
-# Bundles land in src-tauri/target/release/bundle/
+# Bundles land in .artifacts/cargo/release/bundle/
 ```
 
 ### Updater manifest

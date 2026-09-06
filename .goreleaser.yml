@@ -2,6 +2,15 @@ version: 2
 
 project_name: spwn
 
+# goreleaser's default `dist/` is a staging area, not a published
+# product: the archives, checksums and metadata it writes there are
+# uploaded to the GitHub Release and nothing in this repo ever reads
+# them back — no `files`/`exports` entry, no Dockerfile. So it is an
+# artefact like any other and lives under `.artifacts/`, and the
+# `dist/` exception (a build's product beside `src/`) does not apply.
+# `release --clean` wipes this folder only, never the rest of it.
+dist: .artifacts/goreleaser
+
 before:
   hooks:
     # Populate the embedded catalog mirror at

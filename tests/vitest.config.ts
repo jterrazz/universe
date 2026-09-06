@@ -1,20 +1,18 @@
-import { literate } from '@jterrazz/test/vitest';
-import { defineConfig } from 'vitest/config';
+import { defineSpecConfig } from '@jterrazz/test/vitest';
 
-export default defineConfig({
+export default defineSpecConfig({
     /*
      * A `<case>.spec.yaml` beside a spec IS a test file: the plugin adds the
      * glob to the include and transforms each document into a one-test module
      * bound to the runner named here. The runner then reports the document's
      * own path and its `description:`, so a failing scenario opens where it is
-     * written.
+     * written. Declared as a key rather than a plugin because this config has
+     * no `projects` to attach it to.
      */
-    plugins: [
-        literate({
-            include: ['specs/cli/**/*.spec.yaml'],
-            specification: './specs/cli/cli.specification.ts',
-        }),
-    ],
+    literate: {
+        include: ['specs/cli/**/*.spec.yaml'],
+        specification: './specs/cli/cli.specification.ts',
+    },
     test: {
         /*
          * 2 minutes per test: the docker-aware specs spawn real containers.
@@ -35,15 +33,12 @@ export default defineConfig({
         fileParallelism: true,
         include: ['specs/cli/**/*.test.ts', 'specs/lint/**/*.test.ts'],
         /*
-         * The real-build smoke test (specs/cli/smoke/init-up.test.ts) rebuilds a
-         * world image from scratch (~minutes) and runs via vitest.smoke.config.ts.
+         * Additive: the preset already excludes vitest's defaults and every
+         * `_fixtures/` tree. Left to state is the playwright suite, and the
+         * real-build smoke test (specs/cli/smoke/init-up.test.ts) which rebuilds
+         * a world image from scratch (~minutes) and runs via
+         * vitest.smoke.config.ts.
          */
-        exclude: [
-            '**/node_modules/**',
-            '**/dist/**',
-            'web/**',
-            '**/_fixtures/**',
-            'specs/cli/smoke/init-up.test.ts',
-        ],
+        exclude: ['web/**', 'specs/cli/smoke/init-up.test.ts'],
     },
 });

@@ -437,7 +437,7 @@ The simulator inside `spwn-test:latest` writes its observations as JSON to `/tmp
 
 ### L4b · TypeScript: `tests/specs/cli/<domain>/`
 
-Exercise the compiled `bin/spwn` from a user's perspective through one runner, `tests/specs/cli/cli.specification.ts` (`cli`), which is docker-aware and carries the `env` registry a document names by bare word.
+Exercise the compiled `.artifacts/go/spwn` from a user's perspective through one runner, `tests/specs/cli/cli.specification.ts` (`cli`), which is docker-aware and carries the `env` registry a document names by bare word.
 
 A spec is written in one of two forms, and the first is the default.
 

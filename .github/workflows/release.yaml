@@ -75,7 +75,7 @@ jobs:
         # this as a prerequisite; the release pipeline must too.
         cd packages/dependency && go generate ./... && cd ../..
         # Build the CLI sidecar that the Tauri app will spawn at runtime.
-        cd apps/cli && go build -o ../../bin/spwn ./cmd/spwn
+        cd apps/cli && go build -o ../../.artifacts/go/spwn ./cmd/spwn
         cd ../..
       release-name: "spwn ${{ github.ref_name }}"
       release-body: "CLI + desktop app for managing AI agent worlds"

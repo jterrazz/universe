@@ -61,8 +61,8 @@ importers:
         version: 1.4.0
     devDependencies:
       '@jterrazz/typescript':
-        specifier: ^7.0.0
-        version: 7.0.0(@volar/typescript@2.4.28)(eslint@10.2.0(jiti@2.7.0))(oxc-resolver@11.21.3)(unrun@0.2.36)
+        specifier: ^9.0.0
+        version: 9.0.0(@volar/typescript@2.4.28)(eslint@10.2.0(jiti@2.7.0))(oxc-resolver@11.21.3)(unrun@0.2.36)
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.2.2
@@ -104,11 +104,11 @@ importers:
         specifier: ^1.0.0
         version: 1.19.14(hono@4.12.14)
       '@jterrazz/test':
-        specifier: ^14.0.1
-        version: 14.0.1(@types/node@25.6.0)(playwright@1.59.1)(typescript@7.0.2)(vitest@4.1.10(@types/node@25.6.0)(msw@2.15.0(@types/node@25.6.0)(typescript@7.0.2))(vite@8.0.8(@types/node@25.6.0)(jiti@2.7.0)(yaml@2.8.3)))
+        specifier: ^14.1.0
+        version: 14.1.0(@types/node@25.6.0)(playwright@1.59.1)(typescript@7.0.2)(vitest@4.1.10(@types/node@25.6.0)(msw@2.15.0(@types/node@25.6.0)(typescript@7.0.2))(vite@8.0.8(@types/node@25.6.0)(jiti@2.7.0)(yaml@2.8.3)))
       '@jterrazz/typescript':
-        specifier: ^7.0.0
-        version: 7.0.0(@volar/typescript@2.4.28)(eslint@10.2.0(jiti@2.7.0))(oxc-resolver@11.21.3)(unrun@0.2.36)
+        specifier: ^9.0.0
+        version: 9.0.0(@volar/typescript@2.4.28)(eslint@10.2.0(jiti@2.7.0))(oxc-resolver@11.21.3)(unrun@0.2.36)
       '@playwright/test':
         specifier: ^1.59.1
         version: 1.59.1
@@ -631,8 +631,8 @@ packages:
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
 
-  '@jterrazz/test@14.0.1':
-    resolution: {integrity: sha512-kASHW1ENosDhmYAYRHVpN7D2x6s/ZvVFrRugZRIUAsVV/qfkKGVXh/gtc3FtTb55++hP3fP81DPB9/F6HIRymQ==}
+  '@jterrazz/test@14.1.0':
+    resolution: {integrity: sha512-lf7Rpj/ld/Ae8G59GDAVbNM8vCh2/XbNfMQqcDh+BypLmUzdFaYAI4VfTQ4g3yAvQ526zYMIvUedDQe4PriG9A==}
     engines: {node: '>=20'}
     hasBin: true
     peerDependencies:
@@ -648,8 +648,8 @@ packages:
       webdriverio:
         optional: true
 
-  '@jterrazz/typescript@7.0.0':
-    resolution: {integrity: sha512-QIAL9cZIG6LxljpcxkHHfe5h4XEeKt2lj5r7CAoFlt2HGF94INBKbQvVHru5siWAXgogTga7K0cSlklaZgP+GQ==}
+  '@jterrazz/typescript@9.0.0':
+    resolution: {integrity: sha512-skjI0SWkmGhjqg8BnvgMKcKE4o84bsf0Yenr71b/i+11gLxRRSUidABTUid8Ds3DG4dQFg9l3nkEOtXi9CQT6Q==}
     hasBin: true
 
   '@kwsites/file-exists@1.1.1':
@@ -5778,7 +5778,7 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@jterrazz/test@14.0.1(@types/node@25.6.0)(playwright@1.59.1)(typescript@7.0.2)(vitest@4.1.10(@types/node@25.6.0)(msw@2.15.0(@types/node@25.6.0)(typescript@7.0.2))(vite@8.0.8(@types/node@25.6.0)(jiti@2.7.0)(yaml@2.8.3)))':
+  '@jterrazz/test@14.1.0(@types/node@25.6.0)(playwright@1.59.1)(typescript@7.0.2)(vitest@4.1.10(@types/node@25.6.0)(msw@2.15.0(@types/node@25.6.0)(typescript@7.0.2))(vite@8.0.8(@types/node@25.6.0)(jiti@2.7.0)(yaml@2.8.3)))':
     dependencies:
       better-sqlite3: 12.11.1
       mockdate: 3.0.5
@@ -5802,7 +5802,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@jterrazz/typescript@7.0.0(@volar/typescript@2.4.28)(eslint@10.2.0(jiti@2.7.0))(oxc-resolver@11.21.3)(unrun@0.2.36)':
+  '@jterrazz/typescript@9.0.0(@volar/typescript@2.4.28)(eslint@10.2.0(jiti@2.7.0))(oxc-resolver@11.21.3)(unrun@0.2.36)':
     dependencies:
       eslint-plugin-perfectionist: 5.10.0(eslint@10.2.0(jiti@2.7.0))(typescript@6.0.3)
       knip: 6.27.0

@@ -195,7 +195,7 @@ Check what the next release would contain without publishing:
 goreleaser release --snapshot --clean
 ```
 
-This builds everything locally under `./dist/`.
+This builds everything locally under `./.artifacts/goreleaser/`.
 
 ### Updater dry-run (Tauri)
 

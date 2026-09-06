@@ -4,7 +4,7 @@
 
 set -o pipefail
 
-SPWN=${SPWN:-/Users/jterrazz/Developer/spwn/spwn/bin/spwn}
+SPWN=${SPWN:-/Users/jterrazz/Developer/spwn/spwn/.artifacts/go/spwn}
 TMP_ROOT=${TMP_ROOT:-/tmp/qa-50}
 export SPWN_HOME="$TMP_ROOT/spwn_home"
 export SPWN_BASE_IMAGE=${SPWN_BASE_IMAGE:-spwn-test:latest}

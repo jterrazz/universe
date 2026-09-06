@@ -29,18 +29,18 @@ help:  ## Show this help
 generate:  ## Run every //go:generate directive (refreshes the embedded catalog)
 	@cd packages/dependency && go generate ./...
 
-build: generate  ## Build bin/spwn
-	cd apps/cli && go build -o ../../bin/spwn ./cmd/spwn
+build: generate  ## Build .artifacts/go/spwn
+	cd apps/cli && go build -o ../../.artifacts/go/spwn ./cmd/spwn
 
 install: build  ## Build and install to ~/.local/bin
 	@scripts/install.sh
 
-uninstall:  ## Remove the installed bin/spwn
+uninstall:  ## Remove the installed spwn
 	@rm -f $${INSTALL_DIR:-$$HOME/.local/bin}/spwn
 	@echo "  ✓ spwn removed"
 
-clean:  ## rm -rf bin/
-	rm -rf bin/
+clean:  ## rm -rf .artifacts/
+	rm -rf .artifacts/
 
 docs:  ## Regenerate docs/cli from Cobra
 	cd apps/cli && go run ./cmd/gen-docs ../../docs/cli
@@ -96,7 +96,7 @@ test-go-e2e: generate test-image  ## Go world E2E (//go:build e2e) — Architect
 test-compile-e2e: generate  ## Go image-build E2E (compile + Dockerfile rendering)
 	cd packages/compile && go test -v -tags=e2e -timeout=15m ./e2e/...
 
-test-cli: build test-image  ## TypeScript CLI E2E against compiled bin/spwn (vitest)
+test-cli: build test-image  ## TypeScript CLI E2E against the compiled binary (vitest)
 	pnpm -C tests test
 
 test-smoke: build  ## Real-build smoke: spwn init → up → tool probe (~10min cold)

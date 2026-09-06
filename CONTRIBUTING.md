@@ -13,7 +13,7 @@
 git clone https://github.com/jterrazz/spwn.git
 cd spwn
 go work sync
-make build              # builds bin/spwn
+make build              # builds .artifacts/go/spwn
 make test               # runs all Go unit tests
 make lint               # go vet across all modules
 
@@ -110,7 +110,7 @@ make test-image         # build spwn-test:latest (once)
 make test-go-e2e        # run Go world E2E suite
 
 # TypeScript E2E tests - requires built binary + Docker + test image
-make build              # build bin/spwn
+make build              # build .artifacts/go/spwn
 cd tests && npx vitest run
 
 # Type-check TypeScript tests (no execution)

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(currentDir, '../..');
-const BIN = resolve(REPO_ROOT, 'bin/spwn');
+const BIN = resolve(REPO_ROOT, '.artifacts/go/spwn');
 const SPWN_HOME = process.env.SPWN_WEB_E2E_HOME ?? mkdtempSync(resolve(tmpdir(), 'spwn-web-e2e-'));
 const SPWN_PROJECT =
     process.env.SPWN_WEB_E2E_PROJECT ?? mkdtempSync(resolve(tmpdir(), 'spwn-web-e2e-project-'));
@@ -123,7 +123,18 @@ export default defineConfig({
     fullyParallel: false,
     retries: 0,
     workers: 1,
-    reporter: [['list'], ['html', { open: 'never', outputFolder: '../playwright-report' }]],
+    /*
+     * Playwright writes under the `tests` package's `.artifacts/`, like
+     * every other tool: the traces, screenshots and videos of a failed
+     * run in `results/`, the HTML report in `report/`. Both paths are
+     * relative to this config file, which sits one level below that
+     * root.
+     */
+    outputDir: '../.artifacts/playwright/results',
+    reporter: [
+        ['list'],
+        ['html', { open: 'never', outputFolder: '../.artifacts/playwright/report' }],
+    ],
 
     use: {
         baseURL: 'http://localhost:1420',
