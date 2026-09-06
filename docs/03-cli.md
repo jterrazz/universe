@@ -11,6 +11,10 @@ Design rules:
 - Strict noun-first grammar. The only top-level verbs are the shortcuts `up`, `ls`, `talk`.
 - `rm` is contextual: `spwn agent rm neo` deletes the agent; `spwn agent rm neo --dependency X` removes a dep from it.
 - Inside a project, commands resolve against `./spwn/` first. Outside a project, they operate on user-level paths.
+- Names for creation, IDs for reference: creation takes a name, and a running instance is addressed by the ID it was given ([Concepts](02-concepts.md#ids)).
+- `--json` wherever output is worth consuming programmatically.
+
+Two invariants hold across the surface. Commands speak the domain's vocabulary — worlds, agents, souls, dreams — never the backend's. And the manifest is the input while the running world is the output: no command mutates a world image in place, so changing reality means changing `spwn.yaml` or a block file and rebuilding.
 
 ## Command map
 

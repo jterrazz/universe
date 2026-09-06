@@ -40,6 +40,8 @@ Knowledge is **world-scoped**, not held in the Mind: declare a host path via `wo
 - **Worker** — persistent worker agent with its own identity and memory.
 - **NPC** — ephemeral agent, no persistent memory. Single task, fire-and-forget.
 
+Each agent declares one of these as its `role:` — `chief`, `manager`, `worker`, or `npc` ([Primitives](04-primitives.md)). Product and marketing material uses a parallel vocabulary for the same tiers: a Governor is a chief, a Citizen is a worker, an NPC is an npc. The role names above are the ones the manifests and the CLI accept.
+
 ### Evolution
 
 - **Dream** — analyze experience, discover patterns, promote successes to playbooks. `spwn agent dream <name>`
@@ -62,3 +64,4 @@ spwn is built spec-first — the test suite is the living specification. See [Te
 - [Getting started](01-getting-started.md) — install and first agent.
 - [Primitives](04-primitives.md) — the on-disk shape of each block.
 - [Architecture](05-architecture.md) — how the packages that own these abstractions are layered.
+- [Worlds](08-worlds.md) · [Physics](09-physics.md) · [The Mind](10-mind.md) — the design behind the three abstractions.

@@ -134,6 +134,14 @@ Refactor the code I've selected without changing observable behaviour…
 
 The body is written verbatim to `.claude/commands/<name>.md` or `.codex/commands/<name>.md`; frontmatter is interpreted by the runtime, not spwn. Use commands for short prompt shortcuts (5–20 lines); use skills for multi-phase capabilities with state and tool plumbing.
 
+## Invariants
+
+- **Input, not output.** The manifests declare what reality should be; what the agent reads at startup — physics, faculties, roster — is what it is after the build ([Physics](09-physics.md)). Operators author YAML, agents read rendered markdown.
+- **Declarative all the way down.** No manifest triggers behaviour by being edited; reality changes only through `spwn build` and `spwn up`.
+- **Composition, not restriction.** Security comes from what the world image lacks, never from a rule in YAML.
+- **Blocks are files.** Every skill, tool, hook, and command is one file or directory on disk, diffable and reviewable like code.
+- **Declared, then proven.** A tool's `verify:` probes run at the end of the image build, so a world that is missing what it promised fails the build instead of failing an agent.
+
 ## Related
 
 - [Getting started](01-getting-started.md) — the config hierarchy in context.
