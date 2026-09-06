@@ -1,0 +1,12 @@
+description: auth default <provider> sets the preference and records it
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: auth default anthropic
+      exit: 0
+      stderr: |4+
+          
+            ✓ default provider set to anthropic
+
+      files:
+          spwn-home/auth.yaml: { contains: "default_provider: anthropic" }

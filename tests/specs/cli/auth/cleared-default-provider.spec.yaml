@@ -1,0 +1,16 @@
+description: auth default --clear unsets the preference
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: auth default openai
+      exit: 0
+      stderr: |4+
+          
+            ✓ default provider set to openai
+
+    - command: auth default --clear
+      exit: 0
+      stderr: |4+
+          
+            ✓ default provider cleared
+

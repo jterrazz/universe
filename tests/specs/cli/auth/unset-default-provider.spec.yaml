@@ -1,0 +1,11 @@
+description: auth default on a fresh home reports that none is set
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: auth default
+      exit: 0
+      stderr: |4+
+          
+            default provider: not set (auto-resolve)
+            Set one with: spwn auth default <provider>
+

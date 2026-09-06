@@ -1,0 +1,10 @@
+description: the retired auth status subcommand returns a clean error
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: auth status
+      exit: 1
+      stderr: |4+
+          
+            Error: unknown command "status" for "spwn auth"
+
