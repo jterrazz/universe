@@ -1,0 +1,10 @@
+description: check --deep passes on a project whose prompts compile
+fixture: $FIXTURES/single-agent/
+runs:
+    - command: check --deep
+      exit: 0
+      stdout: |4+
+          
+            ✓  Project is valid
+               {{workdir}}/spwn.yaml
+

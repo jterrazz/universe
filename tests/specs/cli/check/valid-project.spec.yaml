@@ -1,0 +1,10 @@
+description: a valid project prints a clean success report
+fixture: $FIXTURES/single-agent/
+runs:
+    - command: check
+      exit: 0
+      stdout: |4+
+          
+            ✓  Project is valid
+               {{workdir}}/spwn.yaml
+

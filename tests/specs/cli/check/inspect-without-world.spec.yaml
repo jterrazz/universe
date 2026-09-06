@@ -1,0 +1,10 @@
+description: world inspect with no world id is refused by arity
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: world inspect
+      exit: 1
+      stderr: |4+
+          
+            Error: accepts 1 arg(s), received 0
+
