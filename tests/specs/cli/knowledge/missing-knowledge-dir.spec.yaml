@@ -1,5 +1,5 @@
 description: a missing knowledge directory surfaces a warning, not a crash
-fixture: $FIXTURES/knowledge-missing-dir/
+fixture: knowledge-missing-dir/
 runs:
     - command: check
       exit: 0

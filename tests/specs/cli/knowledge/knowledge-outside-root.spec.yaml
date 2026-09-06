@@ -1,5 +1,5 @@
 description: a knowledge path outside the project root is a warning today, not an error
-fixture: $FIXTURES/knowledge-outside-root/
+fixture: knowledge-outside-root/
 runs:
     - command: check
       exit: 0

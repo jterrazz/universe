@@ -48,10 +48,13 @@ catalog/                Shipped catalog, one directory per entry
   <template-slug>/        Scaffoldable project (agents/, skills/, knowledge/, spwn.yaml)
 
 tests/                  E2E test suites (Go + TypeScript)
-  cli/                    TypeScript CLI E2E (vitest)
-  catalog/                Catalog invariant tests (Go)
-  smoke/                  Full-build smoke tests
-  fixtures/               Project fixtures used by the specs above
+  specs/cli/              TypeScript CLI E2E (vitest), one folder per domain
+  specs/_fixtures/        Shared project fixtures, reached via $FIXTURES/<name>/
+  web/                    Playwright E2E, one folder per feature
+  _catalog/               Catalog invariant tests (Go)
+  _contracts/             Code-to-test registry, asserted by one script
+  _simulators/            Vendor CLI stubs baked into spwn-test:latest
+  _smoke/                 Full-build smoke tests
 ```
 
 ## Adding a Runtime Adapter

@@ -1,5 +1,5 @@
 description: a project mixing a knowledge world with one without passes check
-fixture: $FIXTURES/knowledge-mixed-worlds/
+fixture: knowledge-mixed-worlds/
 runs:
     - command: check
       exit: 0

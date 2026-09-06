@@ -5,7 +5,7 @@ import { cli } from '../cli.specification.js';
 /**
  * `spwn check --json` — the machine-readable report. These stay in code
  * because the comparison is STRUCTURAL: `expect(result.json).toMatch(…)`
- * judges the envelope by shape against `expected/*.json`, and the compile
+ * judges the envelope by shape against `_expected/*.json`, and the compile
  * pass is filtered by a field rather than read as text. A document's
  * `stdout:` is byte-exact prose; it has no vocabulary for either. The text
  * reports next door are documents.

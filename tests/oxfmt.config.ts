@@ -13,10 +13,10 @@ export default defineConfig({
      */
     ignorePatterns: [
         ...(oxfmt.ignorePatterns ?? []),
-        'specs/fixtures/**',
+        'specs/_fixtures/**',
         'specs/cli/**/*.spec.yaml',
-        'specs/cli/**/expected/**',
-        'specs/cli/**/fixtures/**',
+        'specs/cli/**/_expected/**',
+        'specs/cli/**/_fixtures/**',
         'web/**',
         '_smoke/**',
         '_catalog/**',

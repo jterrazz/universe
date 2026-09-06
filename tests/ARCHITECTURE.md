@@ -136,10 +136,10 @@ spwn/
 │   │   │   │   ├── valid-project.spec.yaml   ← A document: one session, asserted whole
 │   │   │   │   ├── json-report.test.ts       ← A chain: structural JSON
 │   │   │   │   ├── manifest-grammar.test.ts  ← A chain: absences, bridged on documents
-│   │   │   │   ├── fixtures/                 ← Feature-local overlays
-│   │   │   │   └── expected/                 ← Only what a document cannot carry
+│   │   │   │   ├── _fixtures/                ← Feature-local overlays, this leaf's own
+│   │   │   │   └── _expected/                ← Only what a document cannot carry
 │   │   │   └── agent/, world/, init/, build/, dependency/, logs/, …
-│   │   ├── fixtures/              ← Shared pool, reached via `$FIXTURES/<name>/`
+│   │   ├── _fixtures/             ← Shared pool, reached via `$FIXTURES/<name>/`
 │   │   │   └── docker-pilot/, codex-pilot/, single-agent/, empty/, …
 │   │   └── lint/
 │   │       └── guards/            ← Repo-wide source guards (plain vitest, no runner)
@@ -186,10 +186,12 @@ spwn/
 
 ### Why this shape
 
-- **CLI tree** is one folder per DOMAIN of the CLI (`specs/cli/agent/`, `specs/cli/world/`, `specs/cli/check/`), and inside it one file per scenario: `specs/cli/agent/forked-agent.spec.yaml` reads like the session it describes. The folder holds its scenarios, the chains that need code, and — only where those chains need them — a `fixtures/` overlay and an `expected/` golden.
+- **CLI tree** is one folder per DOMAIN of the CLI (`specs/cli/agent/`, `specs/cli/world/`, `specs/cli/check/`), and inside it one file per scenario: `specs/cli/agent/forked-agent.spec.yaml` reads like the session it describes. The folder holds its scenarios, the chains that need code, and — only where those chains need them — a `_fixtures/` overlay and an `_expected/` golden.
+- **Ground carries a leading underscore.** Under `specs/`, what a spec STANDS ON is `_fixtures/` and `_expected/`; a spec's own folder never is, so a domain and its material can never be mistaken for each other. The framework resolves no other name, and `c13-underscored-ground` fails a bare one.
+- **The pool is what SEVERAL leaves share.** A directory of `specs/_fixtures/` reached from exactly one spec folder belongs beside that folder as `<leaf>/_fixtures/<name>/`, because a one-reader fixture parked in the pool reads as shared ground nobody dares change; `c14-pool-fixture-shared` names it and `jterrazz-test-check --fix` moves it.
 - **Web tree** mirrors web's UI grouping: `tests/web/<domain>/<feature>/<feature>.spec.ts` reads like the surface ("worlds/list", "agents/detail", "navigation/sidebar"). One feature = one folder = one spec file.
 - **No false symmetry.** CLI features (`build`, `check`, `auth`, `gate`) often have no web counterpart, and vice versa. The trees don't pretend otherwise; the contract registry (`_contracts/`) is what ties them together when an underlying surface has both.
-- **Underscore-prefixed infrastructure.** `_contracts/`, `_simulators/`, `_fixtures/`, `_smoke/`, `_catalog/` sort above feature folders alphabetically and are visually distinct so no one mistakes them for a domain. The CLI runner and the fixture pool its specs reach for are not among them: they live inside `specs/cli/`, where the framework's own layout rule puts them — `_fixtures/` now holds only the seed dirs the GO E2E suite reads.
+- **Underscore-prefixed infrastructure.** `_contracts/`, `_simulators/`, `_fixtures/`, `_smoke/`, `_catalog/` sort above feature folders alphabetically and are visually distinct so no one mistakes them for a domain. The convention the TS suite adopted by hand at the `tests/` root is the same one the framework now enforces inside `specs/`; the `tests/_fixtures/` at this level is unrelated to the CLI pool and holds only the seed dirs the GO E2E suite reads.
 
 ---
 
@@ -342,7 +344,7 @@ Regenerate goldens with `JTERRAZZ_TEST_UPDATE=1 go test ./packages/runtimes/...`
 
 ### CLI goldens: the document's own streams
 
-Most CLI output is goldened INSIDE the spec document that produced it — `stdout:` and `stderr:` are byte-exact block scalars in the `<case>.spec.yaml`, regenerated with `TEST_UPDATE=1` (see L4b). A sibling `expected/` survives only for the assertions a document cannot carry: `expected/<name>.json` for the structural `result.json` comparisons under `check/`, `agent/` and `world/`.
+Most CLI output is goldened INSIDE the spec document that produced it — `stdout:` and `stderr:` are byte-exact block scalars in the `<case>.spec.yaml`, regenerated with `TEST_UPDATE=1` (see L4b). A sibling `_expected/` survives only for the assertions a document cannot carry: `_expected/<name>.json` for the structural `result.json` comparisons under `check/`, `agent/` and `world/`.
 
 ### Compile cache invariants: `packages/compile/builder_from_base_test.go`
 
@@ -503,7 +505,7 @@ test('up provisions a running world', async () => {
 
 - `await using` — the dispose hook force-removes every container tagged with this run's id so parallel runs never collide. Required by rule B5 on a docker-aware runner, and a harmless no-op for a chain that spawns nothing. A document needs none of it, which is the other reason a container spec stays a chain.
 - `result.container('neo').file(...)` / `.exec(...)` / `.inspect.value` — same accessor API as the host-side `result`. No new vocabulary.
-- `.fixture('$FIXTURES/<name>/')` spreads a project from the shared pool at `specs/fixtures/`; a bare name resolves to the feature's own `fixtures/` overlay, and chained calls layer in order.
+- `.fixture('$FIXTURES/<name>/')` spreads a project from the shared pool at `specs/_fixtures/`; a bare name resolves to the feature's own `_fixtures/` overlay, and chained calls layer in order.
 
 ---
 
