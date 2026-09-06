@@ -20,6 +20,11 @@ import { afterAll } from 'vitest';
  * `sh.spwn.world.config` (the manifest world key) because spwn only
  * sets `sh.spwn.world.name` when the user assigns an explicit display
  * name — empty for fixture-declared worlds.
+ *
+ * The `env` record names the environment sets a `<case>.spec.yaml`
+ * document reaches for by bare word (`env: [isolated]`). A document
+ * states WHICH ground it stands on; how that ground is built stays
+ * here, once.
  */
 const SPWN_BIN = resolve(import.meta.dirname, '../../../bin/spwn');
 
@@ -38,6 +43,14 @@ export const { cli, cleanup } = await specification.cli(SPWN_BIN, {
         envVar: 'SPWN_TEST_LABEL',
         nameLabel: 'sh.spwn.world.config',
         testRunLabel: 'sh.spwn.test.run',
+    },
+    env: {
+        /*
+         * The user's spwn home, moved onto the spec's temp cwd. Without it a
+         * spec reads (and writes) the operator's real ~/.spwn — its agents,
+         * its activity log, its credentials.
+         */
+        isolated: { SPWN_HOME: '$WORKDIR/spwn-home' },
     },
 });
 

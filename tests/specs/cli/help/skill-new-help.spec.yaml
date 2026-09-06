@@ -1,0 +1,15 @@
+description: skill new --help documents the local authoring flow
+fixture: $FIXTURES/empty/
+runs:
+    - command: skill new --help
+      exit: 0
+      stdout: |+
+          
+          Author a new skill file
+
+          Usage:
+            spwn skill new <skill-name> [flags]
+
+          Flags:
+            -h, --help   help for new
+

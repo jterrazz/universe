@@ -1,6 +1,20 @@
+import { literate } from '@jterrazz/test/vitest';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+    /*
+     * A `<case>.spec.yaml` beside a spec IS a test file: the plugin adds the
+     * glob to the include and transforms each document into a one-test module
+     * bound to the runner named here. The runner then reports the document's
+     * own path and its `description:`, so a failing scenario opens where it is
+     * written.
+     */
+    plugins: [
+        literate({
+            include: ['specs/cli/**/*.spec.yaml'],
+            specification: './specs/cli/cli.specification.ts',
+        }),
+    ],
     test: {
         /*
          * 2 minutes per test: the docker-aware specs spawn real containers.

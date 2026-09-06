@@ -1,3 +1,0 @@
-
-  Error: unknown command "nonexistent" for "spwn"
-
