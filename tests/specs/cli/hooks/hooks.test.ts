@@ -16,7 +16,7 @@ import { cli } from '../cli.specification.js';
 
 test('subscribed hooks land in .claude/settings.json and the commands run inside the world', async () => {
     // Given - the hook-pilot world brought online (real docker build path)
-    await using result = await cli.fixture('$FIXTURES/hook-pilot/').exec('up');
+    await using result = await cli.fixture('hook-pilot/').exec('up');
 
     // Then - both subscribed hooks render into settings.json with the right shape and run inside the container
     expect(result.exitCode, `stdout:\n${result.stdout.text}\nstderr:\n${result.stderr.text}`).toBe(

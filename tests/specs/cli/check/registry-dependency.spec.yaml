@@ -1,5 +1,5 @@
 description: a remote-registry tool reference is rejected with explicit wording
-fixture: $FIXTURES/check-registry-tool/
+fixture: check-registry-tool/
 runs:
     - command: check
       exit: 1

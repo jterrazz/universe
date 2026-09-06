@@ -1,5 +1,5 @@
 description: bare, local and @owner dependency refs are each rejected with the grammar
-fixture: $FIXTURES/check-legacy-refs/
+fixture: check-legacy-refs/
 runs:
     - command: check
       exit: 1
