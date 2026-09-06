@@ -17,9 +17,9 @@ export default defineConfig(
             '_catalog',
             '_contracts',
             '_simulators',
-            'specs/fixtures/**',
-            'specs/cli/**/expected/**',
-            'specs/cli/**/fixtures/**',
+            'specs/_fixtures/**',
+            'specs/cli/**/_expected/**',
+            'specs/cli/**/_fixtures/**',
         ],
     }),
 );

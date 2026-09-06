@@ -6,7 +6,7 @@ import { cli } from '../cli.specification.js';
  * `spwn agent ls` — every spec whose subject is the JSON envelope rather
  * than the printed roster. These stay in code because the comparison is
  * STRUCTURAL: `expect(result.json).toMatch(…)` judges the envelope by
- * shape against `expected/*.json`, which a byte-exact `stdout:` cannot
+ * shape against `_expected/*.json`, which a byte-exact `stdout:` cannot
  * express. The header spec compares two SEPARATE runs to each other,
  * which a document — one binary, one working directory, one session —
  * has no vocabulary for either.

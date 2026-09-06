@@ -42,7 +42,7 @@ export default defineConfig({
             '**/node_modules/**',
             '**/dist/**',
             'web/**',
-            '**/fixtures/**',
+            '**/_fixtures/**',
             'specs/cli/smoke/init-up.test.ts',
         ],
     },

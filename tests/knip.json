@@ -11,5 +11,5 @@
     "ignoreBinaries": ["make", "pgrep"],
     "ignoreDependencies": ["hono", "@hono/node-server"],
     "project": ["specs/**/*.ts"],
-    "ignore": ["specs/fixtures/**", "specs/cli/**/fixtures/**", "specs/cli/**/expected/**"]
+    "ignore": ["specs/_fixtures/**", "specs/cli/**/_fixtures/**", "specs/cli/**/_expected/**"]
 }
