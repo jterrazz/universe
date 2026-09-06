@@ -1,0 +1,11 @@
+description: an ephemeral agent with no world to attach to is refused
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: agent --ephemeral lint-code
+      exit: 1
+      stderr: |4+
+          
+            ✗ Ephemeral requires --world no world specified
+              Run "spwn ls" to see active worlds
+

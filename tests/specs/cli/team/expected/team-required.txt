@@ -1,3 +1,0 @@
-
-  Error: team name is required
-

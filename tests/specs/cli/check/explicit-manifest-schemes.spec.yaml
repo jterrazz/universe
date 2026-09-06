@@ -1,0 +1,47 @@
+description: the manifest is the strict boundary even where the cli accepts a shorthand
+fixture: $FIXTURES/empty/
+runs:
+    - command: init
+      exit: 0
+      stdout: |4
+            Committed:
+              spwn.yaml                      # project manifest (worlds live inline)
+              spwn.lock                      # committed dependency pins (like package-lock.json)
+              spwn/agents/neo/               # starter agent
+              spwn/skills/focus.md           # example local skill  (skill/focus)
+              spwn/tools/greet/              # example local tool   (tool/greet)
+              spwn/hooks/session-banner.yaml # example local hook   (hook/session-banner)
+              spwn/commands/refactor.md      # example slash command (command/refactor)
+
+            Gitignored:
+              .spwn/                         # local state
+
+            Next:
+              spwn auth                      # verify your credentials
+              spwn agent neo                 # open an interactive session with neo
+      stderr: |4+
+          
+            ✓ Initialised spwn project {{string}}
+
+
+    - command: install qmd
+      exit: 0
+      stdout: |4
+            ✓  installed spwn:qmd
+               1 agent updated, spwn.lock pinned
+    - command: install skill/focus --agent neo
+      exit: 0
+      stdout: |4
+            ✓  installed skill/focus
+               1 agent updated, spwn.lock pinned
+    - command: install spwn:unix
+      exit: 0
+      stdout: |4
+            ✓  installed spwn:unix
+               1 agent updated, spwn.lock pinned
+      files:
+          spwn/agents/neo/agent.yaml:
+              contains:
+                  - 'spwn:qmd'
+                  - 'skill/focus'
+                  - 'spwn:unix'

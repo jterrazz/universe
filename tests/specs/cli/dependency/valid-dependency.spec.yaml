@@ -1,0 +1,10 @@
+description: an spwn:mempalace dependency is accepted without error
+fixture: $FIXTURES/check-valid-dep/
+runs:
+    - command: check
+      exit: 0
+      stdout: |4+
+          
+            ✓  Project is valid
+               {{workdir}}/spwn.yaml
+

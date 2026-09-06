@@ -1,0 +1,15 @@
+description: installing the same ref twice leaves the manifest unchanged
+fixture: $FIXTURES/docker-pilot/
+runs:
+    - command: install spwn:python
+      exit: 0
+      stdout: |4
+            ✓  installed spwn:python
+               1 agent updated, spwn.lock pinned
+    - command: install spwn:python
+      exit: 0
+      stdout: |4
+            ✓  installed spwn:python
+               1 agent updated, spwn.lock pinned
+      files:
+          spwn/agents/neo/agent.yaml: { contains: "spwn:python" }

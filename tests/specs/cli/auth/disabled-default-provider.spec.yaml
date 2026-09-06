@@ -1,0 +1,17 @@
+description: auth default refuses a provider that is currently disabled
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: auth disable openai
+      exit: 0
+      stderr: |4+
+          
+            ✓ openai disabled; spwn will behave as though it has no credentials
+            Re-enable with: spwn auth enable openai
+
+    - command: auth default openai
+      exit: 1
+      stderr: |4+
+            ✗ Default refused          openai is currently disabled
+              Run `spwn auth enable openai` first, or pick a different provider
+

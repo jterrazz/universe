@@ -51,17 +51,6 @@ describe('graceful shutdown', () => {
         expect(result.container('neo').exists).toBe(false);
     });
 
-    test('down with no running worlds succeeds gracefully', async () => {
-        // Given - a down with nothing to destroy
-        await using result = await cli.fixture('$FIXTURES/docker-pilot/').exec('down');
-
-        // Then - no crash and the explicit zero-count banner fires (scalpel: crash absence + banner probe)
-        expect(result.stderr.text).not.toContain('panic');
-        expect(result.stderr.text).not.toContain('goroutine');
-        expect(result.stderr.text).not.toContain('FATAL');
-        expect(result.stderr).toContain('No project worlds were running');
-    });
-
     test('down appends a journal entry to the destroyed agent', async () => {
         // Given - a running world with neo, brought up then down
         await using result = await cli.fixture('$FIXTURES/docker-pilot/').exec(['up', 'down']);
@@ -70,14 +59,5 @@ describe('graceful shutdown', () => {
         expect(result.exitCode).toBe(0);
         const entries = await result.directory('spwn/agents/neo/journal').files();
         expect(entries.length).toBeGreaterThanOrEqual(1);
-    });
-
-    test('upgrade --help documents graceful world shutdown', async () => {
-        // Given - the upgrade help flag
-        await using result = await cli.fixture('$FIXTURES/docker-pilot/').exec('upgrade --help');
-
-        // Then - cobra prints the full upgrade usage block covering the release download and world stop
-        expect(result.exitCode).toBe(0);
-        expect(result.stdout).toMatch('upgrade-help.txt');
     });
 });

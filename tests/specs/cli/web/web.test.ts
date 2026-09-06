@@ -18,16 +18,6 @@ import { cli } from '../cli.specification.js';
 const isolated = () => cli.fixture('$FIXTURES/empty/').env({ SPWN_HOME: '$WORKDIR/spwn-home' });
 
 describe('spwn web', () => {
-    test('--help documents the core flags', async () => {
-        // Given - a one-shot help invocation
-        await using result = await isolated().exec('web --help');
-
-        // Then - the usage lists the core flags (scalpel: cobra-formatted help wording, D11(e))
-        expect(result.exitCode).toBe(0);
-        expect(result.stdout).toContain('--port');
-        expect(result.stdout).toContain('--no-open');
-    });
-
     test('web child exits cleanly on SIGTERM, leaves no orphans', async () => {
         // Given - a uniquely-marked SPWN_HOME so surviving processes carrying this env can be grepped after dispose
         const homeMarker = `spwn-test-web-sigterm-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

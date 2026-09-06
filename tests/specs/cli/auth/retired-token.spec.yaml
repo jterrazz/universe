@@ -1,0 +1,10 @@
+description: the retired auth token subcommand returns a clean error
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: auth token sk-ant-foo
+      exit: 1
+      stderr: |4+
+          
+            Error: unknown command "token" for "spwn auth"
+

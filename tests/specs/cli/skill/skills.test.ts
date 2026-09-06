@@ -7,9 +7,10 @@ import { cli } from '../cli.specification.js';
  * single source of ambient context — it inlines physics, faculties,
  * roster, conventions, and the playbook index. Tool-shipped skills are
  * materialised under the agent home's `.claude/skills/<skill>/SKILL.md` at
- * spawn time. The first two specs spin a real world (docker-backed); the
- * last is a CLI-only project-scoped `skill new`. Every result binds with
- * `await using` (rule B5).
+ * spawn time. Both specs here spin a real world and read the container
+ * back, which is why they stay chains; every result binds with
+ * `await using` (rule B5). The CLI-only `skill new` is a document beside
+ * this file.
  */
 describe('system skills infrastructure (docker)', () => {
     test('per-agent CLAUDE.md is laid down with world context inlined', async () => {
@@ -48,18 +49,5 @@ describe('system skills infrastructure (docker)', () => {
         const dir = await neo.exec('test -d /agents/neo/.claude/skills');
         expect(dir.exitCode).toBe(0);
         expect(neo.file('/agents/neo/.claude/skills/focus/SKILL.md').exists).toBe(true);
-    });
-});
-
-describe('spwn skill new (project-local)', () => {
-    test('skill new inside a project writes into the project tree', async () => {
-        // Given - an initialised empty project with a new skill authored
-        await using result = await cli
-            .fixture('$FIXTURES/empty/')
-            .exec(['init', 'skill new my-skill']);
-
-        // Then - it lands under spwn/skills/ (not ~/.spwn/skills/)
-        expect(result.exitCode).toBe(0);
-        expect(result.file('spwn/skills/my-skill.md').exists).toBe(true);
     });
 });

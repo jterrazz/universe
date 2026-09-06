@@ -1,0 +1,10 @@
+description: --dry-run prints the plan without touching disk
+fixture: $FIXTURES/docker-pilot/
+runs:
+    - command: build --tree-only --dry-run
+      exit: 0
+      stdout: |
+          agents/neo/.claude/settings.json
+          agents/neo/CLAUDE.md
+      files:
+          dist: absent

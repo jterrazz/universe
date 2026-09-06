@@ -1,0 +1,10 @@
+description: the retired auth check subcommand returns a clean error
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: auth check
+      exit: 1
+      stderr: |4+
+          
+            Error: unknown command "check" for "spwn auth"
+

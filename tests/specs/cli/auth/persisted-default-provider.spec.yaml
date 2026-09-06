@@ -1,0 +1,17 @@
+description: auth default reads back what was previously set
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: auth default anthropic
+      exit: 0
+      stderr: |4+
+          
+            ✓ default provider set to anthropic
+
+    - command: auth default
+      exit: 0
+      stderr: |4+
+          
+            default provider: anthropic
+            Clear with:  spwn auth default --clear
+

@@ -1,0 +1,11 @@
+description: sleep on a missing agent is a no-op
+fixture: $FIXTURES/single-agent/
+runs:
+    - command: agent sleep ghost
+      exit: 0
+      stderr: |4+
+          
+            → Sleep cycle for agent "ghost"...
+            ✓ Archived playbooks       0
+            ✓ Pruned sessions          0
+

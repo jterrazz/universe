@@ -1,0 +1,10 @@
+description: auth login with an unknown provider lists both registries
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: auth login bogus-name
+      exit: 1
+      stderr: |4+
+          
+            Error: unknown provider "bogus-name"; try one of: anthropic, openai (or one of the MCP providers: notion; or one of the CLI tools: github, google)
+

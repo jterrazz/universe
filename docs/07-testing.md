@@ -20,6 +20,14 @@ spwn is built **spec-first**: the test suite is the living specification of what
 
 Each domain tests only its own contract. Cross-domain flows (spawn world + agent → verify journal) are the CLI's responsibility, exercised by the TypeScript E2E suite against the compiled `bin/spwn`. The TS E2E suite uses [`@jterrazz/test`](https://github.com/jterrazz/package-test); runtime simulators in `tests/_simulators/` (mock Claude/Codex CLIs, baked into `spwn-test:latest`) stand in for the real runtimes.
 
+### Two forms, one runner
+
+Most CLI E2E specs are **documents**: a `<case>.spec.yaml` beside its siblings, stating one terminal session — the fixture it stands on, each command, each exit code, the streams byte-for-byte, and what the run left on disk. A document is the default because a spwn command IS a terminal session, and the format asserts every run of one instead of stopping at the first failure.
+
+The rest are **chains**, `<aspect>.test.ts`, for what the format cannot state: a container read back with `.container(name)`, JSON judged by shape, an ABSENCE (`files:` says what a file contains, never what it does not), a count, two runs compared to each other, a host shell-out, output that varies with the operator's machine, a long-running process. Every chain file opens with the reason it is one; when only a single assertion needs code, the session still lives in a document and `cli.run('<case>.spec.yaml')` asserts it whole.
+
+Both forms bind to the same runner, `tests/specs/cli/cli.specification.ts`. The full grammar and the `TEST_UPDATE=1` workflow are in [`../tests/README.md`](../tests/README.md#typescript-e2e-setup-testsspecscli).
+
 ## Running the suites
 
 All gates run through the `Makefile` (single entry point; CI mirrors it in `.github/workflows/validate.yaml`):

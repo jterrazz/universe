@@ -1,4 +1,0 @@
-
-  ✓ Installed example spwn:matrix
-
-

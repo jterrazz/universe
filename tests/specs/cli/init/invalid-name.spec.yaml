@@ -1,0 +1,11 @@
+description: init rejects a --name that fails the manifest regex
+fixture: $FIXTURES/empty/
+runs:
+    - command: init --name "Has Spaces"
+      exit: 1
+      stderr: |4+
+          
+            Error: invalid --name "Has Spaces" — must match ^[a-z0-9][a-z0-9-]*$ (lowercase letters, digits, and dashes)
+
+      files:
+          spwn.yaml: absent

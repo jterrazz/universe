@@ -1,0 +1,12 @@
+description: a stray file under an agent directory is invisible to the validator
+fixture:
+    - $FIXTURES/single-agent/
+    - stray-skill/
+runs:
+    - command: check
+      exit: 0
+      stdout: |4+
+          
+            ✓  Project is valid
+               {{workdir}}/spwn.yaml
+

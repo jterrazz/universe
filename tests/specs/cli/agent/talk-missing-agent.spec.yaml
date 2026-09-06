@@ -1,0 +1,11 @@
+description: talk to a non-existent agent hints at agent create
+fixture: $FIXTURES/docker-pilot/
+runs:
+    - command: agent talk does-not-exist hello
+      exit: 1
+      stderr: |4+
+          
+            Error: agent "does-not-exist" not found
+
+            Create one with: spwn agent create does-not-exist
+

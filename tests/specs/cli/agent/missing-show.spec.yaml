@@ -1,0 +1,10 @@
+description: show on a missing agent errors cleanly
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: agent show ghost
+      exit: 1
+      stderr: |4+
+          
+            Error: agent "ghost" not found
+

@@ -1,0 +1,10 @@
+description: down with no world id names the argument it wants
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: down
+      exit: 1
+      stderr: |4+
+          
+            Error: requires a world-id argument or --all flag
+

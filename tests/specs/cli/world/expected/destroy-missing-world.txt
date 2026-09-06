@@ -1,5 +1,0 @@
-
-  → Destroying world...
-  ✗ Destroy failed           world world-nonexistent-00000 not found
-    Check that world "world-nonexistent-00000" exists with "spwn world list"
-

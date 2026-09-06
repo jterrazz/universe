@@ -1,0 +1,28 @@
+description: --agent keeps one agent's events and drops the rest
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: agent create neo
+      exit: 0
+      stderr: |4+
+          
+            → Creating agent "neo"...
+            ✓ Created agent            neo
+            ✓ Created soul             SOUL.md
+
+            ✓ Spawn with: spwn up --agent neo
+
+    - command: agent create morpheus
+      exit: 0
+      stderr: |4+
+          
+            → Creating agent "morpheus"...
+            ✓ Created agent            morpheus
+            ✓ Created soul             SOUL.md
+
+            ✓ Spawn with: spwn up --agent morpheus
+
+    - command: logs --agent neo
+      exit: 0
+      stdout: |4
+            {{time}}  agent.created  You created neo

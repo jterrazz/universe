@@ -1,0 +1,11 @@
+description: down with no running worlds succeeds with an explicit zero-count banner
+fixture: $FIXTURES/docker-pilot/
+runs:
+    - command: down
+      exit: 0
+      stderr: |4+
+          
+            → Stopping project worlds...
+
+            ✓ No project worlds were running.
+

@@ -1,0 +1,10 @@
+description: an ephemeral dispatched with no world is refused
+fixture: $FIXTURES/docker-pilot/
+runs:
+    - command: agent --ephemeral "do something"
+      exit: 1
+      stderr: |4+
+          
+            ✗ Ephemeral requires --world no world specified
+              Run "spwn ls" to see active worlds
+

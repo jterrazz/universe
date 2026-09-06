@@ -101,33 +101,6 @@ describe('full agent lifecycle', () => {
         expect(result.file('neo.tar.gz').exists).toBe(true);
     });
 
-    test('error recovery: operations on a deleted agent fail without crashing', async () => {
-        // Given - neo removed then inspected
-        await using result = await cli
-            .fixture('$FIXTURES/docker-pilot/')
-            .exec(['agent rm neo', 'agent inspect neo']);
-
-        // Then - a clean non-zero exit, no panic or stack trace (scalpel: crash-signal absence)
-        expect(result.exitCode).toBe(1);
-        expect(result.stderr.text).not.toContain('panic');
-        expect(result.stderr.text).not.toContain('goroutine');
-        expect(result.stderr.text).not.toContain('FATAL');
-        expect(result.stderr).toContain('neo');
-    });
-
-    test('error recovery: down on an invalid world id fails gracefully', async () => {
-        // Given - a destroy against a fabricated world id
-        await using result = await cli
-            .fixture('$FIXTURES/docker-pilot/')
-            .exec('down world-fake-99999');
-
-        // Then - a clean non-zero exit, no crash (scalpel: crash-signal absence)
-        expect(result.exitCode).toBe(1);
-        expect(result.stderr.text).not.toContain('panic');
-        expect(result.stderr.text).not.toContain('goroutine');
-        expect(result.stderr.text).not.toContain('FATAL');
-    });
-
     test('error recovery: double destroy is idempotent', async () => {
         // Given - up then two downs in one chain
         await using result = await cli

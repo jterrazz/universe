@@ -1,0 +1,10 @@
+description: team new rejects an empty name
+fixture: $FIXTURES/empty/
+env: isolated
+runs:
+    - command: team new ""
+      exit: 1
+      stderr: |4+
+          
+            Error: team name is required
+

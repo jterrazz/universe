@@ -1,0 +1,32 @@
+description: world enter validates the world before printing any banner
+fixture: $FIXTURES/empty/
+runs:
+    - command: init
+      exit: 0
+      stdout: |4
+            Committed:
+              spwn.yaml                      # project manifest (worlds live inline)
+              spwn.lock                      # committed dependency pins (like package-lock.json)
+              spwn/agents/neo/               # starter agent
+              spwn/skills/focus.md           # example local skill  (skill/focus)
+              spwn/tools/greet/              # example local tool   (tool/greet)
+              spwn/hooks/session-banner.yaml # example local hook   (hook/session-banner)
+              spwn/commands/refactor.md      # example slash command (command/refactor)
+
+            Gitignored:
+              .spwn/                         # local state
+
+            Next:
+              spwn auth                      # verify your credentials
+              spwn agent neo                 # open an interactive session with neo
+      stderr: |4+
+          
+            ✓ Initialised spwn project {{string}}
+
+
+    - command: world enter nonexistent
+      exit: 1
+      stderr: |4+
+            ✗ Enter failed             world nonexistent not found
+              Check running worlds with "spwn world ls"
+

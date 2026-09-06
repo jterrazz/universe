@@ -1,0 +1,11 @@
+description: destroying a world key the project does not declare fails cleanly
+fixture: $FIXTURES/docker-pilot/
+runs:
+    - command: down world-nonexistent-00000
+      exit: 1
+      stderr: |4+
+          
+            → Destroying world...
+            ✗ Destroy failed           world world-nonexistent-00000 not found
+              Check that world "world-nonexistent-00000" exists with "spwn world list"
+

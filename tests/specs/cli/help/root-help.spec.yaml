@@ -1,0 +1,41 @@
+description: root --help renders the grouped help page
+fixture: $FIXTURES/empty/
+runs:
+    - command: --help
+      exit: 0
+      stdout: |+
+          
+          ⬡ spwn - the building blocks of agent intelligence
+
+          Quick Start:
+            spwn init                        Scaffold a new project
+            spwn agent new neo               Create an agent (auto-creates a single-agent world)
+            spwn up                          Bring up every world in spwn.yaml
+            spwn agent neo                   Start the world that contains neo
+
+          Entities:
+            agent                            Composed minds (new, ls, start, stop, inspect, add, fork, talk)
+            world                            Deployable groupings (start, stop, ls, inspect, enter, snap)
+
+          Building blocks:
+            install <ref>                    Install a dependency (spwn:unix, github.com/...)
+            uninstall <ref>                  Remove a dependency
+            skill                            Author skill files (new, edit, show, rm, ls)
+
+          Shortcuts:
+            up [name]                        Start every world (or one) (alias: world start)
+            ls                               Agent-centric status (running, deployed, orphan)
+            down [name]                      Stop every world (or one) (alias: world stop)
+
+          Coordination:
+            architect                        Always-on orchestration daemon
+            logs                             System event log (--world, --agent, --type)
+
+          System:
+            init                             Create default configs
+            status                           Show running state
+            auth                             Manage credentials
+            upgrade                          Update the CLI
+
+          Run "spwn <command> --help" for details.
+
