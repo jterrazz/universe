@@ -1,0 +1,12 @@
+description: an empty AGENTS.md is rejected with a loud error
+fixture:
+    - $FIXTURES/docker-pilot/
+    - empty-agents-md/
+runs:
+    - command: build --tree-only
+      exit: 1
+      stderr: |4+
+          
+            Error: agent prompt is missing or empty for: neo
+          Create spwn/agents/<name>/AGENTS.md with the agent's system prompt
+

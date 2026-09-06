@@ -12,6 +12,10 @@ import { cli } from '../cli.specification.js';
  * introspection stays on raw `docker`/`execSync` — a built image is not a
  * spawned container, so `result.container(...)` cannot reach it. The
  * runner is docker-aware, so every result binds with `await using` (B5).
+ *
+ * Every spec here builds a real image and reads it back, which is why they
+ * stay chains. The two refusals that never reach Docker — no project, and a
+ * project that fails validation — are documents beside this file.
  */
 describe('spwn build', () => {
     afterEach(() => {
@@ -29,17 +33,6 @@ describe('spwn build', () => {
         } catch {
             // Nothing to clean — ignore.
         }
-    });
-
-    test('errors when run outside a spwn project', async () => {
-        // Given - the empty fixture has no spwn.yaml anywhere up the tree
-        await using result = await cli.fixture('$FIXTURES/empty/').exec('build');
-
-        // Then - exits non-zero nudging the user at spwn init (scalpel: stderr lowercased for a case-insensitive probe)
-        expect(result.exitCode).toBe(1);
-        const stderr = result.stderr.text.toLowerCase();
-        expect(stderr).toContain('spwn init');
-        expect(stderr).toContain('spwn.yaml');
     });
 
     test('produces a tagged image from docker-pilot', async () => {
@@ -127,18 +120,5 @@ describe('spwn build', () => {
             encoding: 'utf8',
         });
         expect(images).toMatch(/spwn-test-qa:v1/);
-    });
-
-    test('catches project validation errors before touching Docker', async () => {
-        // Given - a project whose agent references a nonexistent tool
-        await using result = await cli
-            .fixture('$FIXTURES/check-invalid-tool/')
-            .env({ SPWN_BASE_IMAGE: 'spwn-test:latest' })
-            .exec('build');
-
-        // Then - the error comes from validation, not docker (scalpel: presence + absence probe)
-        expect(result.exitCode).toBe(1);
-        expect(result.stderr).toContain('spwn check');
-        expect(result.stderr.text.toLowerCase()).not.toContain('docker build');
     });
 });

@@ -1,0 +1,10 @@
+description: --agent filters the planned tree to one agent in a colony
+fixture:
+    - $FIXTURES/docker-pilot/
+    - colony/
+runs:
+    - command: build --tree-only --agent neo --dry-run
+      exit: 0
+      stdout: |
+          agents/neo/.claude/settings.json
+          agents/neo/CLAUDE.md
